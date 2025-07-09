@@ -1,36 +1,35 @@
-"""Welcome to Reflex! This file outlines the steps to create a basic app."""
-
 import reflex as rx
 
-from rxconfig import config
-
-
-class State(rx.State):
-    """The app state."""
+from .components.stats_cards import stats_cards_group
+from .views.navbar import navbar
+from .views.table import main_table
 
 
 def index() -> rx.Component:
-    # Welcome Page (Index)
-    return rx.container(
-        rx.color_mode.button(position="top-right"),
-        rx.vstack(
-            rx.heading("Buildcheck", size="9"),
-            rx.text(
-                "Get started by editing ",
-                rx.code(f"{config.app_name}/{config.app_name}.py"),
-                size="5",
-            ),
-            rx.link(
-                rx.button("Check out our docs!"),
-                href="https://reflex.dev/docs/getting-started/introduction/",
-                is_external=True,
-            ),
-            spacing="5",
-            justify="center",
-            min_height="85vh",
-        ),        
+    return rx.vstack(
+        navbar(),
+        stats_cards_group(),
+        rx.box(
+            main_table(),
+            width="100%",
+        ),
+        width="100%",
+        spacing="6",
+        padding_x=["1.5em", "1.5em", "3em"],
     )
 
 
-app = rx.App()
-app.add_page(index)
+app = rx.App(
+    theme=rx.theme(
+        appearance="dark", has_background=True, radius="large", accent_color="grass"
+    ),
+)
+
+app.add_page(
+    index,
+    title="Customer Data App",
+    description="A simple app to manage customer data.",
+)
+
+# 
+
