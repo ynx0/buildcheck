@@ -37,20 +37,48 @@ def navbar() -> rx.Component:
         border_bottom="1px solid #eee"
     )
 
+
+def upload_component() -> rx.Component:
+    # return rx.box(
+    #         rx.icon("upload", box_size=6),
+    #         rx.text("Drag & drop your PDF plan here, or"),
+    #         rx.button("Browse Files", size="3", mt="0.5em"),
+    #         border="2px dashed #ccc",
+    #         border_radius="md",
+    #         padding="2em",
+    #         align="center",
+    #         width="100%"
+    # )
+    """
+    border_radius="8px",
+    border_width="2px",
+    border_color="#EBEBEAFF",
+    border_style="dashed",
+    """
+
+    return rx.upload(
+        rx.vstack(
+            rx.icon("cloud-upload", size=50),
+            rx.text("Drag & drop your PDF plan here, or", size="3"),
+            rx.button(
+                "Browse Files",
+                on_click=EmployeeUploadState.handle_upload
+            ),
+            align="center"
+        ),
+        id="upload",
+        accept={
+            "application/pdf": [".pdf"]
+        }
+    )
+
+
 def upload_card() -> rx.Component:
     return rx.vstack(
-        rx.heading("Upload Your Construction Plan", size="9"),
-        rx.text("Select or drag your PDF plans for validation against Saudi building guidelines.", color="gray"),
-        rx.box(
-            rx.icon("upload", box_size=6),
-            rx.text("Drag & drop your PDF plan here, or"),
-            rx.button("Browse Files", size="3", mt="0.5em"),
-            border="2px dashed #ccc",
-            border_radius="md",
-            padding="2em",
-            align="center",
-            width="100%"
-        ),
+        rx.heading("Upload Your Construction Plan", size="9", align="center"),
+        rx.text("Select or drag your PDF plans for validation against Saudi building guidelines.", color="gray", align="center"),
+        upload_component(),
+        rx.divider(),
         rx.text(
             "💡 Tip: For optimal validation, ensure your PDF plans are clear, high-resolution, and not password-protected. "
             "Our system strictly adheres to the latest Saudi building codes.",
