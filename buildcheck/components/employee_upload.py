@@ -100,19 +100,19 @@ def upload_table() -> rx.Component:
     return rx.table.root(
         rx.table.header(
             rx.table.row(
-                rx.table.column_header_cell("Blueprint ID"),
-                rx.table.column_header_cell("Date"),
-                rx.table.column_header_cell("Status"),
-                rx.table.column_header_cell("Actions"),
+                rx.table.column_header_cell("Blueprint ID", justify="center"),
+                rx.table.column_header_cell("Date", justify="center"),
+                rx.table.column_header_cell("Status", justify="center"),
+                rx.table.column_header_cell("Actions", justify="center"),
             )
         ),
         rx.table.body(
             *[
                 rx.table.row(
-                    rx.table.cell(upload["id"]),
-                    rx.table.cell(upload["date"]),
-                    rx.table.cell(status_tag(upload["status"])),
-                    rx.table.cell(rx.link("view", href="#", color="blue")),
+                    rx.table.cell(upload["id"], justify="center"),
+                    rx.table.cell(upload["date"], justify="center"),
+                    rx.table.cell(status_tag(upload["status"]), justify="center"),
+                    rx.table.cell(rx.link("view", href="#"), justify="center"),
                 )
                 for upload in uploads
             ]
