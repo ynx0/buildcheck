@@ -10,20 +10,26 @@ uploads = [
 ]
 
 
+# TODO the file handling works but is very rough right now
+#      it doesn't do anything after the file has successfully uploaded.
 class EmployeeUploadState(rx.State):
     uploaded_file: str = ""
 
     @rx.event
-    async def handle_upload(self):
-        file = rx.upload_files("upload")
-        if not file:
+    async def handle_upload(self, files: list[rx.UploadFile]):
+        if not files:
+            print("no files given")
             return
 
+        print('uploading')
+        file = files[0]
         data = await file.read()
         path = rx.get_upload_dir() / file.name
         with path.open("wb") as f:
             f.write(data)
         self.uploaded_file = file.name
+
+        print('done')
 
 
 def status_tag(status: str) -> rx.Component:
@@ -42,8 +48,6 @@ def status_tag(status: str) -> rx.Component:
 
 
 def buildcheck_logo() -> rx.Component:
-
-    # or hstack
     return rx.hstack(
         rx.image(
             src="/arch_logo.png",
@@ -75,22 +79,34 @@ def navbar() -> rx.Component:
 
 
 def upload_component() -> rx.Component:
-    return rx.upload(
-        rx.vstack(
-            rx.icon("cloud-upload", size=50),
-            rx.text("Drag & drop your PDF plan here, or", size="3"),
+    return rx.vstack(
+            rx.upload(
+                rx.vstack(
+                    rx.icon("cloud-upload", size=50),
+                    rx.button(
+                        "Select File",
+                        # border=f"1px solid {color}",
+                    ),
+                    rx.text("Drag and drop files here or click to select files"),
+
+                    align="center"
+                ),
+                id="upload",
+                multiple=False,
+                accept={
+                    "application/pdf": [".pdf"]
+                },
+            ),
+            rx.text(rx.selected_files("upload")),
             rx.button(
-                "Browse Files",
-                on_click=EmployeeUploadState.handle_upload
+                "Upload",
+                on_click=EmployeeUploadState.handle_upload(
+                    rx.upload_files("upload")
+                ),
             ),
             align="center"
-        ),
-        id="upload",
-        multiple=False,
-        accept={
-            "application/pdf": [".pdf"]
-        }
-    )
+        )
+
 
 
 def upload_card() -> rx.Component:
