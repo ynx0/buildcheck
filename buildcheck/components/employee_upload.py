@@ -107,4 +107,20 @@ def footer() -> rx.Component:
         rx.text("Made by ARCH Authors", font_size="0.7em", color="gray"),
         padding="2em",
         spacing="1"
+
+
+@rx.page(route='/upload')
+def upload_page() -> rx.Component:
+    return rx.vstack(
+        navbar(),
+        rx.center(
+            upload_card(),
+            padding_y="4em"
+        ),
+        rx.heading("Recent Upload Activity", size="9", mt="3em"),
+        upload_table(),
+        footer(),
+        spacing="3",
+        align="center",
+        padding="3",
     )
