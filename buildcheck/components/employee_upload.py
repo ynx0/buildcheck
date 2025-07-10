@@ -9,6 +9,23 @@ uploads = [
     {"id": "403", "date": "2024-08-29", "status": "rejected"},
 ]
 
+
+class EmployeeUploadState(rx.State):
+    uploaded_file: str = ""
+
+    @rx.event
+    async def handle_upload(self):
+        files = rx.upload_files("upload")
+        if not files:
+            return
+
+        file = files[0]
+        data = await file.read()
+        path = rx.get_upload_dir() / file.name
+        with path.open("wb") as f:
+            f.write(data)
+        self.uploaded_file = file.name
+
 def status_tag(status: str) -> rx.Component:
     colors = {
         "pending": "yellow",
