@@ -75,23 +75,6 @@ def navbar() -> rx.Component:
 
 
 def upload_component() -> rx.Component:
-    # return rx.box(
-    #         rx.icon("upload", box_size=6),
-    #         rx.text("Drag & drop your PDF plan here, or"),
-    #         rx.button("Browse Files", size="3", mt="0.5em"),
-    #         border="2px dashed #ccc",
-    #         border_radius="md",
-    #         padding="2em",
-    #         align="center",
-    #         width="100%"
-    # )
-    """
-    border_radius="8px",
-    border_width="2px",
-    border_color="#EBEBEAFF",
-    border_style="dashed",
-    """
-
     return rx.upload(
         rx.vstack(
             rx.icon("cloud-upload", size=50),
