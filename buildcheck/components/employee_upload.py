@@ -91,7 +91,7 @@ def upload_card() -> rx.Component:
         padding="2em",
         border="1px solid #eee",
         border_radius="lg",
-        align="start",
+        align="center",
     )
 
 
