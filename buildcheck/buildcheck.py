@@ -1,35 +1,147 @@
 import reflex as rx
+from supabase import create_client, Client
+import os
+from . import views
 
-from .components.stats_cards import stats_cards_group
-from .views.navbar import navbar
-from .views.table import main_table
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+# Fetch Supabase credentials from environment variables
+supabase_url: str = os.environ.get("SUPABASE_URL")
+supabase_key: str = os.environ.get("SUPABASE_KEY")
+# Create the Supabase client
+supabase_client: Client = create_client(supabase_url, supabase_key)
+
+class State(rx.State):
+    # Track if user is creating a new account or logging in
+    is_new_account: bool = False
+    # Form fields
+    name: str = ""
+    badge_number: str = ""
+    email: str = ""
+    password: str = ""
+
+    def toggle_account_mode(self):
+        self.is_new_account = not self.is_new_account
+
+    def submit(self):
+        if self.is_new_account:
+            try:
+                response = supabase_client.table("users").insert({
+                    "name": self.name,
+                    "badge_number": self.badge_number,
+                    "email": self.email,
+                    "password": self.password  # In production, hash this!
+                }).execute()
+                if response.data:
+                    print(f"Account created for: {self.name}, {self.badge_number}, {self.email}")
+                    print("Account created successfully!")
+                    self.toggle_account_mode()
+                else:
+                    rx.callout("Access denied. Please make sure you filled all required data.")
+            except Exception as e:
+                print("Access denied. Please make sure you filled all required data.", e)
+        else:
+            # Login: check if user exists in Supabase
+            try:
+                response = supabase_client.table("users").select("*").eq("email", self.email).eq("password", self.password).single().execute()
+                if response.data:
+                    print(f"Login successful for: {response.data['name']}")
+                    return rx.redirect("/validation")
+                else:
+                    print("Login failed. Please check your email and password.")
+            except Exception as e:
+                print("Login failed. Please check your email and password.", e)
 
 
 def index() -> rx.Component:
-    return rx.vstack(
-        navbar(),
-        stats_cards_group(),
-        rx.box(
-            main_table(),
-            width="100%",
+    # BuildCheck Login / Signup Page
+    return rx.container(
+        rx.color_mode.button(position="top-right"),
+        rx.center(
+            rx.vstack(
+                rx.heading("ARCH", size="9"),
+                rx.text(
+                    "Welcome! Please log in or create a new account.",
+                    size="5",
+                ),
+                rx.cond(
+                    State.is_new_account,
+                    rx.vstack(
+                        rx.input(
+                            placeholder="Name",
+                            value=State.name,
+                            on_change=State.set_name,
+                        ),
+                        rx.input(
+                            placeholder="Badge Number",
+                            value=State.badge_number,
+                            on_change=State.set_badge_number,
+                        ),
+                        rx.input(
+                            placeholder="Email",
+                            type="email",
+                            value=State.email,
+                            on_change=State.set_email,
+                        ),
+                        rx.input(
+                            placeholder="Password",
+                            type="password",
+                            value=State.password,
+                            on_change=State.set_password,
+                        ),
+                        rx.button(
+                            "Create Account",
+                            on_click=State.submit,
+                            width="100%",
+                        ),
+                        rx.button(
+                            "Already have an account? Log in",
+                            variant="ghost",
+                            on_click=State.toggle_account_mode,
+                        ),
+                        spacing="3",
+                        width="100%",
+                    ),
+                    rx.vstack(
+                        rx.input(
+                            placeholder="Email",
+                            type="email",
+                            value=State.email,
+                            on_change=State.set_email,
+                        ),
+                        rx.input(
+                            placeholder="Password",
+                            type="password",
+                            value=State.password,
+                            on_change=State.set_password,   
+                        ),
+                        rx.button(
+                            "Log In",
+                            on_click=State.submit,
+                            width="100%",
+                        ),
+                        rx.button(
+                            "New user? Create an account",
+                            variant="ghost",
+                            on_click=State.toggle_account_mode,
+                        ),
+                        spacing="3",
+                        width="100%",
+                    ),
+                ),
+                spacing="6",
+                width="350px",
+                padding="6",
+                border_radius="lg",
+                box_shadow="lg",
+                bg="whiteAlpha.900",
+            ),
+            min_height="90vh",
         ),
-        width="100%",
-        spacing="6",
-        padding_x=["1.5em", "1.5em", "3em"],
     )
 
 
-app = rx.App(
-    theme=rx.theme(
-        appearance="dark", has_background=True, radius="large", accent_color="grass"
-    ),
-)
-
-app.add_page(
-    index,
-    title="Customer Data App",
-    description="A simple app to manage customer data.",
-)
-
-# 
-
+app = rx.App()
+app.add_page(index)
+app.add_page(views.validation_page, route="/validation")
