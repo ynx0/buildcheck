@@ -3,6 +3,8 @@ import reflex as rx
 from .components.stats_cards import stats_cards_group
 from .views.navbar import navbar
 from .views.table import main_table
+from .views.EmployeeView2 import employee_view
+
 
 
 def index() -> rx.Component:
@@ -30,6 +32,14 @@ app.add_page(
     title="Customer Data App",
     description="A simple app to manage customer data.",
 )
+
+app.add_page(
+    employee_view,
+    title="Employee Page",
+    description="Employee dashboard where he track his request.",
+    route="/employee"
+)
+
 
 # 
 
