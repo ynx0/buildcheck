@@ -86,6 +86,7 @@ def upload_component() -> rx.Component:
             align="center"
         ),
         id="upload",
+        multiple=False,
         accept={
             "application/pdf": [".pdf"]
         }
