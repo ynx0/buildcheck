@@ -85,7 +85,6 @@ def upload_card() -> rx.Component:
             font_size="0.9em",
             color="gray"
         ),
-        rx.button("📘 Building Guidelines", align_self="end", mt="1em", color_scheme="blue"),
         spacing="6",
         width="100%",
         max_width="40em",
@@ -130,11 +129,15 @@ def upload_table() -> rx.Component:
 
 
 def footer() -> rx.Component:
-    return rx.vstack(
+    return rx.hstack(
         rx.heading("🏗️ BuildCheck", size="6"),
+        rx.spacer(),
         rx.text("Made by ARCH Authors", font_size="0.7em", color="gray"),
+        rx.spacer(),
+        rx.button("📘 Building Guidelines", align_self="end", mt="1em", color_scheme="blue"),
         padding="2em",
-        spacing="1"
+        spacing="5",
+    )
 
 
 @rx.page(route='/upload')
