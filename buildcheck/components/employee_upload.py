@@ -15,11 +15,10 @@ class EmployeeUploadState(rx.State):
 
     @rx.event
     async def handle_upload(self):
-        files = rx.upload_files("upload")
-        if not files:
+        file = rx.upload_files("upload")
+        if not file:
             return
 
-        file = files[0]
         data = await file.read()
         path = rx.get_upload_dir() / file.name
         with path.open("wb") as f:
