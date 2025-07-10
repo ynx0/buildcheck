@@ -1,4 +1,3 @@
-"I'm going to edit this template later"
 import reflex as rx
 from ..components.stats_cards import stats_cards_group
 from .navbar import navbar
