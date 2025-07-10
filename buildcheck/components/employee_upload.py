@@ -26,6 +26,7 @@ class EmployeeUploadState(rx.State):
             f.write(data)
         self.uploaded_file = file.name
 
+
 def status_tag(status: str) -> rx.Component:
     colors = {
         "pending": "yellow",
@@ -40,18 +41,37 @@ def status_tag(status: str) -> rx.Component:
         text_transform="capitalize"
     )
 
-def navbar() -> rx.Component:
+
+def buildcheck_logo() -> rx.Component:
+
+    # or hstack
     return rx.hstack(
-        rx.heading("🏗️ BuildCheck", size="6"),
-        rx.spacer(),
-        rx.link("Home", href="/"),
-        rx.link("Status", href="/status"),
-        rx.spacer(),
-        rx.icon_button(rx.icon("bell"), variant="ghost"),
-        rx.avatar(name="PV", size="3"),
-        rx.button("Logout", size="3", variant="outline"),
-        padding="1em",
-        border_bottom="1px solid #eee"
+        rx.image(
+            src="/arch_logo.png",
+            width="auto",
+            height="50px",
+        ),
+        rx.heading("BuildCheck", size="6"),
+        align="center"
+    )
+
+
+def navbar() -> rx.Component:
+    return rx.box(
+        rx.hstack(
+            buildcheck_logo(),
+            rx.spacer(),
+            rx.link("Home", href="/"),
+            rx.link("Status", href="/status"),
+            rx.spacer(),
+            rx.button("Logout", size="3", variant="outline"),
+            rx.icon_button(rx.icon("bell"), variant="ghost"),
+            rx.avatar(fallback="PV", size="3"),
+            padding="1em",
+            border_bottom="1px solid #eee",
+            align="center"
+        ),
+        width="100%"
     )
 
 
