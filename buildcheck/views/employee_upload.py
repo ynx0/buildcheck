@@ -31,7 +31,7 @@ class EmployeeUploadState(rx.State):
             f.write(data)
         self.uploaded_file = file.name
         yield rx.clear_selected_files("upload")
-        yield rx.toast('done')
+        yield rx.toast.success('done')
 
 
 def status_tag(status: str) -> rx.Component:
