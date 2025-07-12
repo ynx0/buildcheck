@@ -18,18 +18,18 @@ class EmployeeUploadState(rx.State):
     @rx.event
     async def handle_upload(self, files: list[rx.UploadFile]):
         if not files:
-            print("no files given")
+            yield rx.toast.error("no files given")
             return
 
-        print('uploading')
+        yield rx.toast('uploading')
         file = files[0]
         data = await file.read()
         path = rx.get_upload_dir() / file.name
         with path.open("wb") as f:
             f.write(data)
         self.uploaded_file = file.name
-
-        print('done')
+        yield rx.clear_selected_files("upload")
+        yield rx.toast('done')
 
 
 def status_tag(status: str) -> rx.Component:
