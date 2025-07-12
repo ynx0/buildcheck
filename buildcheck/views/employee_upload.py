@@ -58,7 +58,6 @@ def upload_component() -> rx.Component:
                     rx.icon("cloud-upload", size=50),
                     rx.button(
                         "Select File",
-                        # border=f"1px solid {color}",
                     ),
                     rx.text("Drag and drop files here or click to select files"),
 
@@ -137,25 +136,7 @@ def upload_table() -> rx.Component:
 
 
 
-def footer() -> rx.Component:
-    return rx.hstack(
-        rx.heading("🏗️ BuildCheck", size="6"),
-        rx.spacer(),
-        rx.text("Made by ARCH Authors", font_size="0.7em", color="gray"),
-        rx.spacer(),
-        rx.button(
-            rx.hstack(
-                rx.icon("download"),
-                rx.text("Building Guidelines", size="3"),
-            ),
-            align_self="end",
-            mt="1em",
-            color_scheme="blue",
-            on_click=rx.download(url="/sbc201.pdf")
-        ),
-        padding="2em",
-        spacing="5",
-    )
+
 
 
 @rx.page(route='/upload')
