@@ -5,8 +5,13 @@ from .components.stats_cards import stats_cards_group
 from .views.navbar import navbar
 from .views.table import main_table
 from .views.EmployeeView2 import employee_view
+from buildcheck.views.BlueprintAssignments import assignments_table
 
-
+config = rxe.Config(
+    app_name="buildcheck",
+    show_built_with_reflex=False,
+    use_single_port=True,
+)
 
 def index() -> rx.Component:
     return rx.vstack(
@@ -45,6 +50,12 @@ app.add_page(
     route="/employee"
 )
 
+app.add_page(
+    assignments_table,
+    title="Blueprint Assignments",
+    description="Page showing all blueprint assignment statuses.",
+    route="/assignments"
+)
 
 # 
 
