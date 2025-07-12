@@ -47,16 +47,6 @@ def status_tag(status: str) -> rx.Component:
     )
 
 
-def buildcheck_logo() -> rx.Component:
-    return rx.hstack(
-        rx.image(
-            src="/arch_logo.png",
-            width="auto",
-            height="50px",
-        ),
-        rx.heading("BuildCheck", size="6"),
-        align="center"
-    )
 
 
 def navbar() -> rx.Component:
