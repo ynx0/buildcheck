@@ -1,5 +1,7 @@
 import reflex as rx
 from datetime import date
+from .navbar import navbar
+from .footer import footer
 
 # Dummy data for table
 uploads = [
