@@ -1,7 +1,6 @@
 import reflex as rx
-from datetime import date
-from .navbar import navbar
-from .footer import footer
+from buildcheck.components.navbar import navbar
+from buildcheck.components.footer import footer
 
 # Dummy data for table
 uploads = [
