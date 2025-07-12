@@ -2,8 +2,8 @@ import reflex as rx
 
 from .components.stats_cards import stats_cards_group
 import buildcheck.views.employee_upload as em
+from buildcheck.views.reviewer_assignment import rv_assignment
 from buildcheck.components.navbar import navbar
-from .views.table import main_table
 
 
 def index() -> rx.Component:
@@ -11,7 +11,6 @@ def index() -> rx.Component:
         navbar(),
         stats_cards_group(),
         rx.box(
-            main_table(),
             width="100%",
         ),
         width="100%",
@@ -34,7 +33,6 @@ app.add_page(
     title="Customer Data App",
     description="A simple app to manage customer data.",
 )
-
 
 app.add_page(
     em.upload_page,
