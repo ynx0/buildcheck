@@ -2,7 +2,7 @@ import reflex as rx
 
 from .components.stats_cards import stats_cards_group
 import buildcheck.views.employee_upload as em
-from .views.navbar import navbar
+from buildcheck.components.navbar import navbar
 from .views.table import main_table
 
 
