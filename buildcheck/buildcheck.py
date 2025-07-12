@@ -1,6 +1,7 @@
 import reflex as rx
 
 from .components.stats_cards import stats_cards_group
+import buildcheck.views.employee_upload as em
 from .views.navbar import navbar
 from .views.table import main_table
 
@@ -19,9 +20,12 @@ def index() -> rx.Component:
     )
 
 
+
+
 app = rx.App(
     theme=rx.theme(
-        appearance="dark", has_background=True, radius="large", accent_color="grass"
+        appearance="light", has_background=True, radius="large",
+        # accent_color="grass"
     ),
 )
 
@@ -31,5 +35,10 @@ app.add_page(
     description="A simple app to manage customer data.",
 )
 
-# 
+
+app.add_page(
+    em.upload_page,
+    title="Employee Dashboard",
+    description="This page is where the employee can view their case."
+)
 

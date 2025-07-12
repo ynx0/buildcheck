@@ -1,27 +1,22 @@
 import reflex as rx
+from buildcheck.components.bclogo import bclogo
 
 
-def navbar():
-    return rx.flex(
-        rx.badge(
-            rx.icon(tag="table-2", size=28),
-            rx.heading("Customer Data App", size="6"),
-            color_scheme="green",
-            radius="large",
-            align="center",
-            variant="surface",
-            padding="0.65rem",
-        ),
-        rx.spacer(),
+
+def navbar() -> rx.Component:
+    return rx.box(
         rx.hstack(
-            rx.color_mode.button(),
-            align="center",
-            spacing="3",
+            bclogo(),
+            rx.spacer(),
+            rx.link("Home", href="/"),
+            rx.link("Status", href="/status"),
+            rx.spacer(),
+            rx.button("Logout", size="3", variant="outline"),
+            rx.icon_button(rx.icon("bell"), variant="ghost"),
+            rx.avatar(fallback="PV", size="3"),
+            padding="1em",
+            border_bottom="1px solid #eee",
+            align="center"
         ),
-        spacing="2",
-        flex_direction=["column", "column", "row"],
-        align="center",
-        width="100%",
-        top="0px",
-        padding_top="2em",
+        width="100%"
     )
