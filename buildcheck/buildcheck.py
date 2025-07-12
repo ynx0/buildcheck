@@ -1,4 +1,5 @@
 import reflex as rx
+import reflex_enterprise as rxe
 
 from .components.stats_cards import stats_cards_group
 from .views.navbar import navbar
@@ -21,11 +22,15 @@ def index() -> rx.Component:
     )
 
 
-app = rx.App(
+app = rxe.App(
     theme=rx.theme(
-        appearance="dark", has_background=True, radius="large", accent_color="grass"
-    ),
+        appearance="dark",
+        has_background=True,
+        radius="large",
+        accent_color="grass"
+    )
 )
+
 
 app.add_page(
     index,
