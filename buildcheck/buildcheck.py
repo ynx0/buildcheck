@@ -42,3 +42,5 @@ app.add_page(
     description="This page is where the employee can view their case."
 )
 
+app.add_page(rv_assignment, title="Blueprint Assignment")
+
