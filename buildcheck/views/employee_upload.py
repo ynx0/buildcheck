@@ -1,6 +1,8 @@
 import reflex as rx
 from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
+from buildcheck.components.status_tag import status_tag
+
 
 # Dummy data for table
 uploads = [
@@ -33,19 +35,6 @@ class EmployeeUploadState(rx.State):
         yield rx.toast.success('done')
 
 
-def status_tag(status: str) -> rx.Component:
-    colors = {
-        "pending": "yellow",
-        "approved": "green",
-        "rejected": "red",
-        "canceled": "gray",
-    }
-    return rx.badge(
-        status,
-        color_scheme=colors.get(status, "gray"),
-        variant="soft",
-        text_transform="capitalize"
-    )
 
 
 
@@ -130,12 +119,8 @@ def upload_table() -> rx.Component:
         max_width="40em",
         overflow_x="auto",
         padding="1em",
-        box_shadow="sm",
-        border_radius="md",
         variant="surface"
     )
-
-
 
 
 
