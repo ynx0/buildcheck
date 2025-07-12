@@ -1,8 +1,11 @@
 import reflex as rx
+import reflex_enterprise as rxe
 
 from .components.stats_cards import stats_cards_group
 from .views.navbar import navbar
 from .views.table import main_table
+from .views.EmployeeView2 import employee_view
+
 
 
 def index() -> rx.Component:
@@ -19,17 +22,29 @@ def index() -> rx.Component:
     )
 
 
-app = rx.App(
+app = rxe.App(
     theme=rx.theme(
-        appearance="dark", has_background=True, radius="large", accent_color="grass"
-    ),
+        appearance="dark",
+        has_background=True,
+        radius="large",
+        accent_color="grass"
+    )
 )
+
 
 app.add_page(
     index,
     title="Customer Data App",
     description="A simple app to manage customer data.",
 )
+
+app.add_page(
+    employee_view,
+    title="Employee Page",
+    description="Employee dashboard where he track his request.",
+    route="/employee"
+)
+
 
 # 
 
