@@ -6,4 +6,5 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "reflex>=0.8.0",
+    "reflex-enterprise>=0.3.0",
 ]
