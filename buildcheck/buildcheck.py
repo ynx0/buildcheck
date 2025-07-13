@@ -2,6 +2,9 @@ import reflex as rx
 from supabase import create_client, Client
 import os
 from . import views
+import buildcheck.views.employee_upload as em
+from buildcheck.views.reviewer_assignment import rv_assignment
+
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
@@ -160,7 +163,29 @@ def index() -> rx.Component:
     )
 
 
-app = rx.App()
+
+
+
+app = rx.App(
+    theme=rx.theme(
+        appearance="light", has_background=True, radius="large",
+        # accent_color="grass"
+    ),
+)
+
+
+
 app.add_page(index)
 app.add_page(views.validation_page, route="/validation")
 app.add_page(views.employee_blueprint1, route="/blueprint_pending")
+
+
+app.add_page(
+    em.upload_page,
+    title="Employee Dashboard",
+    description="This page is where the employee can view their case."
+)
+
+app.add_page(rv_assignment, title="Blueprint Assignment")
+
+
