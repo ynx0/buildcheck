@@ -1,7 +1,7 @@
 import reflex as rx
 import reflex_enterprise as rxe
 
-from .navbar import navbar
+from buildcheck.components.navbar import navbar
 
 # Sample compliance data
 compliance_data = [

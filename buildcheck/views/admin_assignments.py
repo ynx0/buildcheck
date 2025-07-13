@@ -1,7 +1,10 @@
 import reflex as rx
 import reflex_enterprise as rxe
 
-from .navbar import navbar
+from buildcheck.components.navbar import navbar
+
+
+
 
 # Dummy data
 assignments = [
@@ -163,3 +166,5 @@ def assignments_table() -> rx.Component:
         padding="4",
         width="100%",
     )
+def admin_assignments() -> rx.Component:
+    return assignments_table()
