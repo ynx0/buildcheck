@@ -1,9 +1,14 @@
 import reflex as rx
+import reflex_enterprise as rxe
+from buildcheck.views.employee_view import employee_view
+
 from supabase import create_client, Client
 import os
 from . import views
 import buildcheck.views.employee_upload as em
 from buildcheck.views.reviewer_assignment import rv_assignment
+from buildcheck.views.admin_assignments import admin_assignments
+from buildcheck.views.employee_view import employee_view
 
 
 # Load environment variables from .env file
@@ -171,7 +176,7 @@ def index() -> rx.Component:
 
 
 
-app = rx.App(
+app = rxe.App(
     theme=rx.theme(
         appearance="light", has_background=True, radius="large",
         # accent_color="grass"
@@ -194,3 +199,5 @@ app.add_page(
 app.add_page(rv_assignment, title="Blueprint Assignment")
 
 
+app.add_page(employee_view, route="/employee_view", title="Employee View")
+app.add_page(admin_assignments, route="/admin_assignments", title="Admin Assignments")
