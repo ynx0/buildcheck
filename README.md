@@ -14,10 +14,12 @@ Do this instead of `pip install <package>`
 1. Run `reflex db makemigrations`
 2. Run `reflex db migrate`
 
-## When running reflex, you have to Log in first, so you can use reflex_enterprise##
+## When running reflex ##
+
+You have to sign up on Reflex website first so you can use reflex_enterprise
 
 1. venv\Scripts\activate
-2. reflex logn
+2. reflex login
 3. reflex run
 
 ## Authors
