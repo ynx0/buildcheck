@@ -1,14 +1,12 @@
 import reflex as rx
 from ..components.stats_cards import stats_cards_group
-from .navbar import navbar
-from .table import main_table
+from buildcheck.components.navbar import navbar
 
 def validation_page() -> rx.Component:
     my_child = rx.vstack(
             navbar(),
             stats_cards_group(),
             rx.box(
-                main_table(),
                 width="100%",
             ),
             width="100%",
