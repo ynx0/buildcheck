@@ -1,13 +1,12 @@
 # buildcheck
 
 
-## To add a package
+## How to run the application
 
-Do this instead of `pip install <package>`
+1. `uv sync`
+2. `uv run reflex run`
 
-1. Run `uv add <package>`
-2. Run `uv sync`
-3. Add and commit the `pyproject.toml` and `uv.lock` files
+
 
 ## How to test someone's PR
 
@@ -17,6 +16,17 @@ Do this instead of `pip install <package>`
 4. Test as needed
 5. Switch back to your branch
 6. Run `uv sync`
+
+
+
+## To add a package
+
+Do this instead of `pip install <package>`
+
+1. Run `uv add <package>`
+2. Run `uv sync`
+3. Add and commit the `pyproject.toml` and `uv.lock` files
+
 
 
 ## When making changes to **`Model`s**
