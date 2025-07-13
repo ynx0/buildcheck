@@ -23,19 +23,25 @@ class AssignmentState(rx.State):
         self.search = ""
         self.selected_status = "All Statuses"
 
-    @rx.var
+
+    @rx.var   #This is a computed state variable
     def filtered_assignments(self) -> list[dict]:
-        filtered = assignments
+        filtered = assignments.copy()  # Start with a copy of all assignments
+
+        # Filter by status if needed
         if self.selected_status != "All Statuses":
-            filtered = [a for a in filtered if a["status"] == self.selected_status]
+            filtered = list(filter(lambda a: a["status"] == self.selected_status, filtered))
+
+        # Filter by search query if needed
         if self.search.strip():
             query = self.search.strip().lower()
-            filtered = [
-                a for a in filtered
-                if query in a["employee"].lower() or query in a["id"].lower()
-            ]
-        return filtered
+            filtered = list(filter(
+                lambda a: query in a["employee"].lower() or query in a["id"].lower(),
+                filtered
+            ))
 
+        return filtered
+    
 
 # ---------- COMPONENT HELPERS ----------
 
