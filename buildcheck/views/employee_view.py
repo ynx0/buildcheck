@@ -1,7 +1,6 @@
 import reflex as rx
 import reflex_enterprise as rxe
 
-# from reflex.components.mantine.steps import steps, step
 from .navbar import navbar
 
 # Sample compliance data
@@ -58,29 +57,7 @@ def timeline_example() -> rx.Component:
             color="blue",
             orientation="horizontal",
         ),
-        # rx.button("Advance Step", on_click=TimelineState.next_step, color_scheme="blue", margin_top="2")
     )
-
-# def timeline_example() -> rx.Component:
-#     return rx.hstack(
-#         rxe.steps(
-#             rx.step(label="Received"),
-#             rx.step(label="Under Review"),
-#             rx.step(label="Reviewed"),
-#             active=TimelineState.active_step,
-#             color="blue",
-#         ),
-#         rx.button(
-#             "Advance Step",
-#             on_click=TimelineState.next_step,
-#             color_scheme="blue",
-#             margin_top="2",
-#         ),
-#     )
-
-
-
-
 
 # Employee View Main Page
 def employee_view() -> rx.Component:

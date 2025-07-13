@@ -4,8 +4,8 @@ import reflex_enterprise as rxe
 from .components.stats_cards import stats_cards_group
 from .views.navbar import navbar
 from .views.table import main_table
-from .views.EmployeeView2 import employee_view
-from buildcheck.views.BlueprintAssignments import assignments_table
+from .views.employee_view import employee_view
+from buildcheck.views.admin_assignments import assignments_table
 
 config = rxe.Config(
     app_name="buildcheck",
@@ -27,15 +27,7 @@ def index() -> rx.Component:
     )
 
 
-app = rxe.App(
-    theme=rx.theme(
-        appearance="dark",
-        has_background=True,
-        radius="large",
-        accent_color="grass"
-    )
-)
-
+app = rxe.App()
 
 app.add_page(
     index,
@@ -54,8 +46,5 @@ app.add_page(
     assignments_table,
     title="Blueprint Assignments",
     description="Page showing all blueprint assignment statuses.",
-    route="/assignments"
-)
-
-# 
-
+    route="/blueprint-assignments"
+),
