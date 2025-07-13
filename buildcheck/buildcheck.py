@@ -3,6 +3,7 @@ import reflex as rx
 from .components.stats_cards import stats_cards_group
 import buildcheck.views.employee_upload as em
 from buildcheck.views.reviewer_assignment import rv_assignment
+from buildcheck.views.admin_dashboard import am_dashboard
 from buildcheck.components.navbar import navbar
 
 
@@ -41,4 +42,6 @@ app.add_page(
 )
 
 app.add_page(rv_assignment, title="Blueprint Assignment")
+
+app.add_page(am_dashboard, title="Admin Dashboard")
 
