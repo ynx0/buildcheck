@@ -1,9 +1,9 @@
 import reflex as rx
-from .navbar import navbar
+from buildcheck.components.navbar import navbar
 
 def employee_blueprint1() -> rx.Component:
     return rx.vstack(
-        #navbar(),
+        navbar(),
         rx.heading("Overall Summary"),
         rx.button("Click Me", color_scheme="blue"),
         width="100%",
