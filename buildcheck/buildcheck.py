@@ -13,17 +13,22 @@ supabase_key: str = os.environ.get("SUPABASE_KEY")
 supabase_client: Client = create_client(supabase_url, supabase_key)
 
 class State(rx.State):
-    # Track if user is creating a new account or logging in
     is_new_account: bool = False
-    # Form fields
     name: str = ""
     badge_number: str = ""
     email: str = ""
     password: str = ""
+    role: str = "employee"  # Default role
+    roles: list[str] = ["admin", "employee", "reviewer"]
 
     def toggle_account_mode(self):
         self.is_new_account = not self.is_new_account
 
+    @rx.event
+    def set_role(self, value: str):
+        self.role = value
+
+    @rx.event
     def submit(self):
         if self.is_new_account:
             try:
@@ -31,16 +36,17 @@ class State(rx.State):
                     "name": self.name,
                     "badge_number": self.badge_number,
                     "email": self.email,
-                    "password": self.password  # In production, hash this!
+                    "password": self.password,
+                    "role": self.role
                 }).execute()
                 if response.data:
-                    print(f"Account created for: {self.name}, {self.badge_number}, {self.email}")
-                    print("Account created successfully!")
-                    self.toggle_account_mode()
+                    print(f"Account created for: {self.name}, {self.badge_number}, {self.email}, {self.role}")
+                    return rx.toast.success("Account created successfully!") 
                 else:
-                    rx.callout("Access denied. Please make sure you filled all required data.")
+                    return rx.toast.error("Access denied. Please make sure you filled all required data.") 
             except Exception as e:
-                print("Access denied. Please make sure you filled all required data.", e)
+                print(e)
+                return rx.toast.error("An error occurred during account creation.") 
         else:
             # Login: check if user exists in Supabase
             try:
@@ -49,9 +55,10 @@ class State(rx.State):
                     print(f"Login successful for: {response.data['name']}")
                     return rx.redirect("/validation")
                 else:
-                    print("Login failed. Please check your email and password.")
+                    return rx.toast.error("Login failed. Please check your email and password.")  
             except Exception as e:
-                print("Login failed. Please check your email and password.", e)
+                print(e)
+                return rx.toast.error("An error occurred during login.") 
 
 
 def index() -> rx.Component:
@@ -60,10 +67,15 @@ def index() -> rx.Component:
         rx.color_mode.button(position="top-right"),
         rx.center(
             rx.vstack(
-                rx.heading("ARCH", size="9"),
+                rx.image(
+                    src="/logo.png", 
+                    alt="ARCH Logo",
+                    box_size="80px",
+                    margin_bottom="4",
+                ),
                 rx.text(
                     "Welcome! Please log in or create a new account.",
-                    size="5",
+                    size="4",
                 ),
                 rx.cond(
                     State.is_new_account,
@@ -89,6 +101,12 @@ def index() -> rx.Component:
                             type="password",
                             value=State.password,
                             on_change=State.set_password,
+                        ),
+                        rx.select(
+                            State.roles,
+                            value=State.role,
+                            on_change=State.set_role,
+                            placeholder="Select Role",
                         ),
                         rx.button(
                             "Create Account",
@@ -145,3 +163,4 @@ def index() -> rx.Component:
 app = rx.App()
 app.add_page(index)
 app.add_page(views.validation_page, route="/validation")
+app.add_page(views.employee_blueprint1, route="/blueprint_pending")
