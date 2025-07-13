@@ -45,14 +45,22 @@ def status_tag(status: str) -> rx.Component:
         "In Review": ("blue", "#eff6ff"),
         "Completed": ("green", "#dcfce7"),
     }
-    text_color, bg_color = color_map.get(status, ("gray", "#f4f4f5"))
+    text_color, bg_color = color_map.get(status, ("#374151", "#f4f4f5"))  # fallback gray
+
     return rx.box(
-        rx.text(status, color=text_color, font_size="sm", font_weight="medium"),
-        background_color=bg_color,
-        padding_x="2",
-        padding_y="0.5",
-        border_radius="md",
-        display="inline-block",
+        rx.text(status,
+                color=text_color,
+                font_size="sm",
+                font_weight="medium"),
+
+        bg=bg_color,
+        padding_x="3",
+        padding_y="1",
+        border_radius="xl",
+        # display="inline-block",
+        border=f"0.5px solid {text_color}",
+        border_color="lightgray",
+        width="fit-content",
     )
 
 def action_button(status: str, id_: str) -> rx.Component:
@@ -60,6 +68,7 @@ def action_button(status: str, id_: str) -> rx.Component:
         rx.cond(status == "Unassigned", "Assign", "Reassign"),
         size="2",
         variant="outline",
+        font_size="sm",
         on_click=rx.redirect(f"/assign/{id_}"),
     )
 
@@ -70,54 +79,71 @@ def assignments_table() -> rx.Component:
     return rx.container(
         rx.vstack(
             navbar(),
-            rx.heading("Blueprint Assignments", size="4", margin_top="1"),
+            rx.heading("Blueprint Assignments", size="5", margin_top="1em"),
             rx.hstack(
                 rx.input(
                     placeholder="Search by ID or Employee...",
                     value=AssignmentState.search,
                     on_change=AssignmentState.set_search,
                     width="40%",
+                    size="2",
                 ),
                 rx.select(
                     items=["All Statuses", "Unassigned", "In Review", "Completed"],
                     value=AssignmentState.selected_status,
                     on_change=AssignmentState.set_selected_status,
                     width="20%",
+                    size="2",
                 ),
-                rx.button("Clear Filters", on_click=AssignmentState.reset_filters),
-                rx.button("Assign New Blueprint", color_scheme="blue", on_click=rx.redirect("/new")),
+                rx.button("Clear Filters", on_click=AssignmentState.reset_filters, size="2"),
+                rx.button("Assign New Blueprint", color_scheme="blue", size="2", on_click=rx.redirect("/new")),
                 spacing="4",
                 margin_y="1",
                 width="100%",
             ),
-            rx.table.root(
-                rx.table.header(
-                    rx.table.row(
-                        rx.table.column_header_cell("ID"),
-                        rx.table.column_header_cell("Employee"),
-                        rx.table.column_header_cell("Date"),
-                        rx.table.column_header_cell("Details"),
-                        rx.table.column_header_cell("Status"),
-                        rx.table.column_header_cell("Reviewer"),
-                        rx.table.column_header_cell("Actions"),
-                    )
-                ),
-                rx.table.body(
-                    rx.foreach(
-                        AssignmentState.filtered_assignments,
-                        lambda item: rx.table.row(
-                            rx.table.cell(item["id"]),
-                            rx.table.cell(item["employee"]),
-                            rx.table.cell(item["date"]),
-                            rx.table.cell(rx.link("View", href=f"/details/{item['id']}", color="blue")),
-                            rx.table.cell(status_tag(item["status"])),
-                            rx.table.cell(item["reviewer"]),
-                            rx.table.cell(action_button(item["status"], item["id"])),
+            rx.box(
+                rx.table.root(
+                    rx.table.header(
+                        rx.table.row(
+                            rx.table.column_header_cell("ID"),
+                            rx.table.column_header_cell("Employee"),
+                            rx.table.column_header_cell("Date"),
+                            rx.table.column_header_cell("Details"),
+                            rx.table.column_header_cell("Status"),
+                            rx.table.column_header_cell("Reviewer"),
+                            rx.table.column_header_cell("Actions"),
                         )
-                    )
+                    ),
+                    rx.table.body(
+                        rx.foreach(
+                            AssignmentState.filtered_assignments,
+                            lambda item: rx.table.row(
+                                rx.table.cell(
+                                    rx.text(item["id"], font_size="sm")
+                                ),
+                                rx.table.cell(
+                                    rx.text(item["employee"], font_size="sm")
+                                ),
+                                rx.table.cell(
+                                    rx.text(item["date"], font_size="sm")
+                                ),
+                                rx.table.cell(
+                                    rx.link("View", href=f"/details/{item['id']}", color="blue", font_size="sm", font_weight="medium")
+                                ),
+                                rx.table.cell(status_tag(item["status"])),
+                                rx.table.cell(
+                                    rx.text(item["reviewer"], font_size="sm")
+                                ),
+                                rx.table.cell(
+                                    rx.box(action_button(item["status"], item["id"]))
+                                ),
+                            )
+                        )
+                    ),
+                    striped=True,
+                    highlight_on_hover=True,
+                    width="100%",
                 ),
-                striped=True,
-                highlight_on_hover=True,
                 width="100%",
             ),
             rx.hstack(
@@ -127,6 +153,7 @@ def assignments_table() -> rx.Component:
                 margin_top="1",
             ),
         ),
+        spacing="4",
         padding="4",
         width="100%",
     )

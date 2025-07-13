@@ -1,6 +1,7 @@
 import reflex as rx
 import reflex_enterprise as rxe
 
+# from reflex.components.mantine.steps import steps, step
 from .navbar import navbar
 
 # Sample compliance data
@@ -42,8 +43,11 @@ def get_status_tag(status: str) -> rx.Component:
     )
 
 # Timeline visual
+
+
+
 def timeline_example() -> rx.Component:
-    return rx.vstack(
+    return rx.hstack(
         rxe.mantine.timeline(
             rxe.mantine.timeline.item(title="Received", bullet="•"),
             rxe.mantine.timeline.item(title="Under Review", bullet="•"),
@@ -52,9 +56,31 @@ def timeline_example() -> rx.Component:
             bullet_size=24,
             line_width=2,
             color="blue",
+            orientation="horizontal",
         ),
-        rx.button("Advance Step", on_click=TimelineState.next_step, color_scheme="blue", margin_top="2")
+        # rx.button("Advance Step", on_click=TimelineState.next_step, color_scheme="blue", margin_top="2")
     )
+
+# def timeline_example() -> rx.Component:
+#     return rx.hstack(
+#         rxe.steps(
+#             rx.step(label="Received"),
+#             rx.step(label="Under Review"),
+#             rx.step(label="Reviewed"),
+#             active=TimelineState.active_step,
+#             color="blue",
+#         ),
+#         rx.button(
+#             "Advance Step",
+#             on_click=TimelineState.next_step,
+#             color_scheme="blue",
+#             margin_top="2",
+#         ),
+#     )
+
+
+
+
 
 # Employee View Main Page
 def employee_view() -> rx.Component:
@@ -68,10 +94,13 @@ def employee_view() -> rx.Component:
                     rx.vstack(
                         rx.hstack(
                             rx.heading("Compliance Report", size="5", margin_top="2"),
+                            rx.spacer(),
                             timeline_example(),
                             justify="between",
+                            spacing="4",
                             width="100%",
                             align_items="center",
+                            # alighn_items="start",
                             margin_bottom="3"
                         ),
 
@@ -148,12 +177,14 @@ def employee_view() -> rx.Component:
                                 spacing="4",
                                 background_color="#F0F4FF",
                                 padding="4",
-                                border_radius="lg",
-                                width="100%"
+                                width="100%",
                             ),
                             width="100%",
                             align_self="stretch",
-                            margin_bottom="4"
+                            border_radius="md",
+                            margin_bottom="4",
+                            padding="4",
+                            
                         ),
 
                         # Updated Compliance Table with label, borders
@@ -202,10 +233,10 @@ def employee_view() -> rx.Component:
                         rx.button("Download Report", color_scheme="blue", margin_top="3")
                     ),
                     padding="2em",
-                    background_color="white",
-                    border="1px solid #ccc",      # ✅ Light border
-                    border_radius="lg",           # ✅ Rounded corners
-                    box_shadow="sm",              # ✅ Soft shadow
+                    background_color="#F7F7F7",  # Light background
+                    border="1px solid #ccc",      # Light border
+                    border_radius="lg",           # Rounded corners
+                    box_shadow="sm",              # Soft shadow
                     width="100%",
                     margin_top="2"
                 ),
