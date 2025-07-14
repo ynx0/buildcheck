@@ -1,5 +1,11 @@
 # buildcheck
 
+## Reflex resources
+
+- Components library - https://reflex.dev/docs/library/
+- Templates to copy code from - https://reflex.dev/templates/
+- Enterprise Components (is free) - https://enterprise.reflex.dev/
+
 
 ## How to run the application
 
