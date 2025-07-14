@@ -1,6 +1,7 @@
 import reflex as rx
 from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
+from buildcheck.components.progress_tracker import progress_tracker, ProgressTrackerState
 
 class SelectState(rx.State):
     blueprint_id: str = "444"
@@ -14,6 +15,7 @@ def employee_blueprint1() -> rx.Component:
     return rx.vstack(
         navbar(),
         rx.heading("Overall Summary"),
+        progress_tracker(),
         rx.hstack(rx.text("Blueprint ID:", size="4",),
         rx.select(
             SelectState.blueprintIds,
@@ -26,7 +28,7 @@ def employee_blueprint1() -> rx.Component:
                 rx.vstack(
                     rx.heading("Compliance Report", size="5"),
                     rx.text("Your plan is currently under review. Please monitor your email for any updates.", size="4"),
-                    rx.button("Resubmit", background_color="#197dca"),
+                    rx.button("Resubmit", background_color="#197dca", size="3", marginTop="2em"),
                 ),
                 rx.image(
                     src="./blueprint.jpg",
@@ -41,4 +43,3 @@ def employee_blueprint1() -> rx.Component:
         spacing="6",
         padding_x=["1.5em", "1.5em", "3em"],
     ), footer(),
- 
