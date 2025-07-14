@@ -73,7 +73,7 @@ def upload_component() -> rx.Component:
 
 def upload_card() -> rx.Component:
     return rx.vstack(
-        rx.heading("Upload Your Construction Plan", size="9", align="center"),
+        rx.heading("Upload Your Construction Plan", size="8", align="center"),
         rx.text("Select or drag your PDF plans for validation against Saudi building guidelines.", color="gray", align="center"),
         upload_component(),
         rx.divider(),
