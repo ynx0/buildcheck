@@ -1,7 +1,7 @@
 import reflex as rx
 from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
-from buildcheck.components.progress_tracker import progress_tracker, ProgressTrackerState
+from buildcheck.components.progress_tracker import progress_tracker
 
 class SelectState(rx.State):
     blueprint_id: str = "444"
