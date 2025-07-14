@@ -1,4 +1,4 @@
 from .validationView_reviewer import validation_page
-from .employeeBlueprint1 import employee_blueprint1
+from .employee_blueprint import employee_blueprint
 
-__all__ = ["validation_page", "employee_blueprint1"]
+__all__ = ["validation_page", "employee_blueprint"]

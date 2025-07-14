@@ -11,7 +11,7 @@ class SelectState(rx.State):
     def change_blueprint(self, value: str):
         self.blueprint_id = value
 
-def employee_blueprint1() -> rx.Component:
+def employee_blueprint() -> rx.Component:
     return rx.vstack(
         navbar(),
         rx.heading("Overall Summary"),
@@ -38,8 +38,7 @@ def employee_blueprint1() -> rx.Component:
             padding="2em",
             width="100%",
         ),
-        
         width="100%",
         spacing="6",
         padding_x=["1.5em", "1.5em", "3em"],
-    ), footer(),
+    ), footer()
