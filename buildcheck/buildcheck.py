@@ -4,11 +4,15 @@ from buildcheck.views.employee_view import employee_view
 
 from supabase import create_client, Client
 import os
+
 from . import views
+from buildcheck.views.admin_dashboard import am_dashboard
+from buildcheck.components.navbar import navbar
 import buildcheck.views.employee_upload as em
 from buildcheck.views.reviewer_assignment import rv_assignment
 from buildcheck.views.admin_assignments import admin_assignments
 from buildcheck.views.employee_view import employee_view
+
 
 
 # Load environment variables from .env file
@@ -49,12 +53,12 @@ class State(rx.State):
                 }).execute()
                 if response.data:
                     print(f"Account created for: {self.name}, {self.badge_number}, {self.email}, {self.role}")
-                    return rx.toast.success("Account created successfully!") 
+                    return rx.toast.success("Account created successfully!")
                 else:
-                    return rx.toast.error("Access denied. Please make sure you filled all required data.") 
+                    return rx.toast.error("Access denied. Please make sure you filled all required data.")
             except Exception as e:
                 print(e)
-                return rx.toast.error("An error occurred during account creation.") 
+                return rx.toast.error("An error occurred during account creation.")
         else:
             # Login: check if user exists in Supabase
             try:
@@ -63,10 +67,10 @@ class State(rx.State):
                     print(f"Login successful for: {response.data['name']}")
                     return rx.redirect("/validation")
                 else:
-                    return rx.toast.error("Login failed. Please check your email and password.")  
+                    return rx.toast.error("Login failed. Please check your email and password.")
             except Exception as e:
                 print(e)
-                return rx.toast.error("An error occurred during login.") 
+                return rx.toast.error("An error occurred during login.")
 
 config = rxe.Config(
     app_name="buildcheck",
@@ -81,7 +85,7 @@ def index() -> rx.Component:
         rx.center(
             rx.vstack(
                 rx.image(
-                    src="/logo.png", 
+                    src="/logo.png",
                     alt="ARCH Logo",
                     box_size="80px",
                     margin_bottom="4",
@@ -145,7 +149,7 @@ def index() -> rx.Component:
                             placeholder="Password",
                             type="password",
                             value=State.password,
-                            on_change=State.set_password,   
+                            on_change=State.set_password,
                         ),
                         rx.button(
                             "Log In",
@@ -197,6 +201,7 @@ app.add_page(
 )
 
 app.add_page(rv_assignment, title="Blueprint Assignment")
+app.add_page(am_dashboard, title="Admin Dashboard")
 
 
 app.add_page(employee_view, route="/employee_view", title="Employee View")

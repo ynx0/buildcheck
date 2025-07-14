@@ -14,6 +14,19 @@ def status_tag(status: str) -> rx.Component:
         color_scheme=colors.get(status, "gray"),
         variant="soft",
         text_transform="capitalize",
-        # radius="full",
-        # size="3"
     )
+
+def freq_tag(freq: str) -> rx.Component:
+    colors = {
+        "high": "red",
+        "medium": "yellow",
+        "low": "blue"
+    }
+
+    return rx.badge(
+        freq,
+        color_scheme=colors.get(freq, "gray"),
+        variant="soft",
+        text_transform="capitalize",
+    )
+
