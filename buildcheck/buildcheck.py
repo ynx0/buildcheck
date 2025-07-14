@@ -181,7 +181,7 @@ app = rx.App(
 
 app.add_page(index)
 app.add_page(views.validation_page, route="/validation")
-app.add_page(views.employee_blueprint1, route="/blueprint_pending")
+app.add_page(views.employee_blueprint, route="/blueprint-pending")
 
 
 app.add_page(
