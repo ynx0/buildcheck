@@ -114,10 +114,6 @@ def cards() -> rx.Component:
         spacing="5",
     )
 
-def stats() -> rx.Component:
-    return rx.box()
-
-
 
 
 def validation_trends() -> rx.Component:
