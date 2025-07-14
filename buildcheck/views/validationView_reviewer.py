@@ -1,5 +1,5 @@
 import reflex as rx
-from ..components.stats_cards import stats_cards_group
+from ..components.boilerplate_stats_cards import stats_cards_group
 from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 def validation_page() -> rx.Component:
