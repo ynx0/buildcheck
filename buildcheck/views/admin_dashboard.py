@@ -53,10 +53,6 @@ def pretty_time_diff(past, now=None):
 
 
 
-# title
-# cards list flex
-# 2 column report , recent activity
-
 def stat_card(title: str, statistic, icon_name: str, color: str = "blue", subtitle: str = "") -> rx.Component:
     # statistic must be an rx.Var
     def card_title(title: str, icon_name: str, color: str) -> rx.Component:
