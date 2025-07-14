@@ -9,6 +9,6 @@ def bclogo() -> rx.Component:
             width="auto",
             height="50px",
         ),
-        rx.heading("BuildCheck", size="6"),
+        rx.heading("ARCH", size="6"),
         align="center"
     )
