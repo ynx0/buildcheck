@@ -10,7 +10,7 @@ function downloadImage(dataUrl) {
   // Create a temporary link element
   const link = document.createElement('a');
   link.href = dataUrl;
-  link.download = 'report.pdf';
+  link.download = 'report.png';
 
   // Append to DOM, trigger click, then remove
   document.body.appendChild(link);
