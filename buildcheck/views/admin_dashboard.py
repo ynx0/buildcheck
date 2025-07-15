@@ -8,8 +8,7 @@ from buildcheck.components.navbar import navbar
 from buildcheck.components.stat_card import stat_card
 from buildcheck.components.status_tag import freq_tag
 
-
-
+HTML2CANVAS_PRO_SRC="https://unpkg.com/html2canvas-pro@1.5.11/dist/html2canvas-pro.js"
 months = list(map(lambda x: x[:3], calendar.month_name[1:]))
 
 class AdminDashState(rx.State):
@@ -20,7 +19,13 @@ class AdminDashState(rx.State):
     successes: list[dict] = []
 
 
-    def randomize_successes(self):
+    @rx.event
+    def no_op(self):
+        # needed to suppress _call_script no callback error
+        pass
+
+    async def randomize_successes(self):
+        # yield rx.call_script("alert('hi')")
         if self.successes:
             return
 
@@ -245,17 +250,24 @@ def main_content2() -> rx.Component:
     )
 
 
-
 @rx.page(route='/admin-dashboard', on_load=AdminDashState.randomize_successes)
 def am_dashboard() -> rx.Component:
     return rx.vstack(
+        rx.script(src=HTML2CANVAS_PRO_SRC),
+        rx.script(src='/export-lib.js'),
         navbar(),
-        rx.heading("Admin Dashboard", size="9"),
+        rx.flex(
+            rx.heading("Admin Dashboard", size="9"),
+            rx.button("Export Report", on_click=rx.call_script("downloadPDF()", callback=AdminDashState.no_op)),
+            justify="between",
+            align="baseline",
+            width="100%",
+        ),
         cards(),
         main_content1(),
         main_content2(),
         footer(),
-        align="center",
+        align="start",
         spacing="3",
         padding="3",
         padding_x=["1.5em", "1.5em", "3em"],

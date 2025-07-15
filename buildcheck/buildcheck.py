@@ -8,7 +8,10 @@ import buildcheck.views.employee_upload as em
 from buildcheck.views.reviewer_assignment import rv_assignment
 from buildcheck.views.admin_assignments import admin_assignments
 from buildcheck.views.admin_dashboard import am_dashboard
-
+from buildcheck.views.employee_blueprint import employee_blueprint
+from buildcheck.views.employee_notifications import employee_notifications
+from buildcheck.views.reviewer_notifications import reviewer_notifications
+from buildcheck.views.admin_notifications import admin_notifications
 
 
 # Load environment variables from .env file
@@ -182,10 +185,22 @@ app = rx.App(
     )
 )
 
+app.add_page(
+    em.upload_page,
+    title="Employee Dashboard",
+    description="This page is where the employee can view their case."
+)
+
+app.add_page()
+
+
 app.add_page(index)
 app.add_page(views.validation_page, route="/validation")
+app.add_page(views.employee_blueprint, route="/blueprint-pending")
+app.add_page(views.employee_notifications, route="/employee-notifcations")
+app.add_page(views.admin_notifications, route="/admin-notifications")
+app.add_page(views.reviewer_notifications, route="/reviewer-notifications")
 app.add_page(views.employee_blueprint1, route="/blueprint_pending")
-
 app.add_page(em.upload_page, title="Employee Dashboard", description="This page is where the employee can view their case.")
 app.add_page(rv_assignment, title="Blueprint Assignment")
 app.add_page(employee_view, route="/employee_view", title="Employee View")
