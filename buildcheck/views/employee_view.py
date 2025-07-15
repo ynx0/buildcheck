@@ -1,6 +1,4 @@
 import reflex as rx
-import reflex_enterprise as rxe
-
 from buildcheck.components.navbar import navbar
 
 # Sample compliance data
@@ -17,19 +15,11 @@ class BlueprintState(rx.State):
     def set_blueprint(self, value: str):
         self.selected = value
 
-# Timeline progress state
-class TimelineState(rx.State):
-    active_step: int = 0  # 0 = Received, 1 = Under Review, 2 = Reviewed
-
-    def next_step(self):
-        if self.active_step < 2:
-            self.active_step += 1
-
 # Status tag helper
 def get_status_tag(status: str) -> rx.Component:
     return rx.box(
         rx.text(
-            status,
+            status.capitalize(),
             color=rx.cond(status == "approved", "green", "red"),
             font_weight="medium",
             font_size="sm"
@@ -39,24 +29,6 @@ def get_status_tag(status: str) -> rx.Component:
         padding_x="2",
         padding_y="1",
         display="inline-block"
-    )
-
-# Timeline visual
-
-
-
-def timeline_example() -> rx.Component:
-    return rx.hstack(
-        rxe.mantine.timeline(
-            rxe.mantine.timeline.item(title="Received", bullet="•"),
-            rxe.mantine.timeline.item(title="Under Review", bullet="•"),
-            rxe.mantine.timeline.item(title="Reviewed", bullet="•"),
-            active=TimelineState.active_step,
-            bullet_size=24,
-            line_width=2,
-            color="blue",
-            orientation="horizontal",
-        ),
     )
 
 # Employee View Main Page
@@ -72,12 +44,10 @@ def employee_view() -> rx.Component:
                         rx.hstack(
                             rx.heading("Compliance Report", size="5", margin_top="2"),
                             rx.spacer(),
-                            timeline_example(),
                             justify="between",
                             spacing="4",
                             width="100%",
                             align_items="center",
-                            # alighn_items="start",
                             margin_bottom="3"
                         ),
 
@@ -116,7 +86,6 @@ def employee_view() -> rx.Component:
                                                 font_weight="bold",
                                                 style={"fontSize": "2rem"},
                                                 color="green"),
-
                                         rx.text("Compliance Score", font_size="sm", color="gray"),
                                         text_align="center"
                                     ),
@@ -125,7 +94,6 @@ def employee_view() -> rx.Component:
                                                 font_weight="bold",
                                                 style={"fontSize": "2rem"},
                                                 color="blue"),
-
                                         rx.text("Passed Checks", font_size="sm", color="gray"),
                                         text_align="center"
                                     ),
@@ -149,7 +117,6 @@ def employee_view() -> rx.Component:
                                     justify="center",
                                     width="100%",
                                     margin_top="3",
-
                                 ),
                                 spacing="4",
                                 background_color="#F0F4FF",
@@ -161,7 +128,6 @@ def employee_view() -> rx.Component:
                             border_radius="md",
                             margin_bottom="4",
                             padding="4",
-                            
                         ),
 
                         # Updated Compliance Table with label, borders

@@ -159,7 +159,7 @@ def recent_activity() -> rx.Component:
     def row(action) -> rx.Component:
         return rx.vstack(
             # TODO make this real
-            rx.text(f"Blueprint #{action["id"]} {action["act"]} to {action["recipient"]}"),
+            rx.text(f"Blueprint #{action['id']} {action['act']} to {action['recipient']}"),
             rx.text(str(action["datetime"]), size="1", color="gray")
         )
 

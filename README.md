@@ -4,8 +4,6 @@
 
 - Components library - https://reflex.dev/docs/library/
 - Templates to copy code from - https://reflex.dev/templates/
-- Enterprise Components (is free) - https://enterprise.reflex.dev/
-
 
 ## How to run the application
 
@@ -39,14 +37,6 @@ Do this instead of `pip install <package>`
 
 1. Run `reflex db makemigrations`
 2. Run `reflex db migrate`
-
-## When running reflex ##
-
-You have to sign up on Reflex website first so you can use reflex_enterprise
-
-1. venv\Scripts\activate
-2. reflex login
-3. reflex run
 
 ## Authors
 

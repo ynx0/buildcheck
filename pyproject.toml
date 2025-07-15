@@ -8,6 +8,4 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "reflex>=0.8.0",
     "supabase>=2.16.0",
-    "reflex-enterprise>=0.3.0",
-
 ]

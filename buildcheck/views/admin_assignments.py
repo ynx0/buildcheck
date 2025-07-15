@@ -1,6 +1,4 @@
 import reflex as rx
-import reflex_enterprise as rxe
-
 from buildcheck.components.navbar import navbar
 
 
@@ -44,7 +42,7 @@ class AssignmentState(rx.State):
             ))
 
         return filtered
-    
+
 
 # ---------- COMPONENT HELPERS ----------
 
