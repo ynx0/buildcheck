@@ -182,7 +182,9 @@ app = rx.App(
 app.add_page(index)
 app.add_page(views.validation_page, route="/validation")
 app.add_page(views.employee_blueprint, route="/blueprint-pending")
-
+app.add_page(views.employee_notifications, route="/employee-notifcations")
+app.add_page(views.admin_notifications, route="/admin-notifications")
+app.add_page(views.reviewer_notifications, route="/reviewer-notifications")
 
 app.add_page(
     em.upload_page,
