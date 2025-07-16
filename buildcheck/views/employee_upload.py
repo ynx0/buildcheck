@@ -135,8 +135,8 @@ def upload_page() -> rx.Component:
         ),
         rx.heading("Recent Upload Activity", size="9", mt="3em"),
         upload_table(),
-        footer(),
         spacing="3",
         align="center",
         padding="3",
-    )
+    ), footer()
+

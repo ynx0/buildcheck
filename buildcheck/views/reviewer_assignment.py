@@ -96,8 +96,7 @@ def rv_assignment() -> rx.Component:
         blueprints_card(),
         search(),
         blueprint_table(),
-        footer(),
         spacing="3",
         padding="3",
         padding_x=["1.5em", "1.5em", "3em"]
-    )
+    ), footer()

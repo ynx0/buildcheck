@@ -266,9 +266,8 @@ def am_dashboard() -> rx.Component:
         cards(),
         main_content1(),
         main_content2(),
-        footer(),
         align="start",
         spacing="3",
         padding="3",
         padding_x=["1.5em", "1.5em", "3em"],
-    )
+    ), footer()
