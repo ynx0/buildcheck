@@ -1,5 +1,5 @@
 import reflex as rx
-from buildcheck.components.navbar import navbar
+from buildcheck.components.navbar import navbar_employee
 from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
 
@@ -110,7 +110,7 @@ def upload_table() -> rx.Component:
                     rx.table.cell(upload["id"], justify="center"),
                     rx.table.cell(upload["date"], justify="center"),
                     rx.table.cell(status_tag(upload["status"]), justify="center"),
-                    rx.table.cell(rx.link("view", href="#"), justify="center"),
+                    rx.table.cell(rx.link("view", href="/blueprint-pending"), justify="center"),
                 )
                 for upload in uploads
             ]
@@ -128,7 +128,7 @@ def upload_table() -> rx.Component:
 @rx.page(route='/upload')
 def upload_page() -> rx.Component:
     return rx.vstack(
-        navbar(),
+        navbar_employee(),
         rx.center(
             upload_card(),
             padding_y="4em"

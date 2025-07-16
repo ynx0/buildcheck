@@ -1,25 +1,16 @@
 import reflex as rx
 from buildcheck.components.stat_card import stat_card
-from buildcheck.components.navbar import navbar
+from buildcheck.components.navbar import navbar_reviewer
 from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
-from supabase import create_client, Client
-import os
-from dotenv import load_dotenv
-load_dotenv()
-# Fetch Supabase credentials from environment variables
-supabase_url: str = os.environ.get("SUPABASE_URL")
-supabase_key: str = os.environ.get("SUPABASE_KEY")
-# Create the Supabase client
-supabase_client: Client = create_client(supabase_url, supabase_key)
+from buildcheck.backend.supabase_client import supabase 
 
 
 class GuidelineState(rx.State):
     guideline: list[str]  # Explicitly type as list of list of strings
     # I know that we should'nt use this table, but I'm only using it to get guidelines examples
     # When we finalize the DB schema, I will replace this with the correct table
-    response = supabase_client.table("guidelines").select("*").execute()
-    print(response.data)
+    response = supabase.table("guidelines").select("*").execute()
     guideline = [
         [item.get("code"), item.get("title"), item.get("description"),item.get("category")]
         for item in response.data
@@ -37,7 +28,7 @@ def show_guideline(guideline: list):
         rx.table.cell(guideline[0]),
         rx.table.cell(guideline[1]),
         rx.table.cell(guideline[2]),
-        rx.table.cell(status_tag("rejected")),
+        rx.table.cell(status_tag("approved")),  # Assuming status is always "approved" for this example
         rx.table.cell(guideline[3]),
         rx.table.cell(rx.button("Delete", color_scheme="red")),
     )
@@ -50,7 +41,7 @@ class FormInputState(rx.State):
 
 def validation_page() -> rx.Component:
     return rx.vstack(
-            navbar(),
+            navbar_reviewer(),
             rx.hstack(rx.text("Blueprint ID:", font_weight="bold"),
             rx.select(
                 ["444", "555", "343"],
@@ -58,8 +49,19 @@ def validation_page() -> rx.Component:
                 on_change=SelectState.change_bluePrint,
                 width="200px"
             ),
-            rx.button("Approve", color_scheme="blue"),
-            rx.button("Reject", color_scheme="red"),
+            rx.button(
+            "Approve",
+            color_scheme="blue",
+            on_click=lambda: [
+                rx.toast.success("Blueprint approved!"),
+                rx.redirect("/assignments")
+            ]
+            ),
+            rx.button(
+            "Reject",
+            color_scheme="red",
+            on_click=lambda: [rx.toast.error("Blueprint rejected!"), rx.redirect("/assignments")]
+            ),
             margin="15px"
             ),
             rx.heading("AI Compliance Overview", size="6"),

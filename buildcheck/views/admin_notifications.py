@@ -2,7 +2,7 @@ import reflex as rx
 from datetime import datetime, timedelta  # Importing Python's datetime tools to manage timestamps 
 
 # Imporing reusable layout components created by the team 
-from buildcheck.components.navbar import navbar
+from buildcheck.components.navbar import navbar_admin
 from buildcheck.components.footer import footer
 from buildcheck.components.notification import notifications_page
 
@@ -29,5 +29,5 @@ admin_notifs = [
 # Main Admin page function 
 # This function is used by Reflex to display the admin notifications UI
 def admin_notifications() -> rx.Component:
-    return navbar(), notifications_page("Admin", admin_notifs), footer()
+    return navbar_admin(), notifications_page("Admin", admin_notifs), footer()
 

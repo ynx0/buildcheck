@@ -1,11 +1,11 @@
 import reflex as rx
-from buildcheck.components.navbar import navbar
+from buildcheck.components.navbar import navbar_reviewer
 from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
 from typing import List
 
 data: List[dict] = [
-    {"id": "444", "submitter": "Brian Hall", "date": "2025-6-4", "status": "pending"},
+    {"id": "444", "submitter": "Noura Alnaimi", "date": "2025-7-16", "status": "pending"},
     {"id": "411", "submitter": "John Robinson", "date": "2025-5-24", "status": "pending"},
     {"id": "405", "submitter": "David Lee", "date": "2024-9-14", "status": "pending"},
     {"id": "403", "submitter": "Christopher Clark", "date": "2024-8-29", "status": "rejected"},
@@ -91,7 +91,7 @@ def search() -> rx.Component:
 @rx.page(route='/assignments')
 def rv_assignment() -> rx.Component:
     return rx.vstack(
-        navbar(),
+        navbar_reviewer(),
         rx.heading("Assigned Blueprints", size="9"),
         blueprints_card(),
         search(),
