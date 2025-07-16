@@ -1,11 +1,18 @@
 import reflex as rx
+from typing import TypedDict
 from buildcheck.components.navbar import navbar
+from buildcheck.components.admin_status_tag import get_admin_status_tag
 
 
+class Assignment(TypedDict):
+    id: str
+    employee: str
+    date: str
+    status: str
+    reviewer: str
 
 
-# Dummy data
-assignments = [
+assignments: list[Assignment] = [
     {"id": "BP001", "employee": "John Doe", "date": "2024-03-15", "status": "Unassigned", "reviewer": "Not Assigned"},
     {"id": "BP002", "employee": "Jane Smith", "date": "2024-03-16", "status": "In Review", "reviewer": "Alice Smith"},
     {"id": "BP003", "employee": "Peter Jones", "date": "2024-03-17", "status": "Completed", "reviewer": "Bob Johnson"},
@@ -14,7 +21,6 @@ assignments = [
     {"id": "BP006", "employee": "Sarah Chen", "date": "2024-03-20", "status": "Unassigned", "reviewer": "Not Assigned"},
 ]
 
-# ---------- STATE ----------
 
 class AssignmentState(rx.State):
     search: str = ""
@@ -24,16 +30,13 @@ class AssignmentState(rx.State):
         self.search = ""
         self.selected_status = "All Statuses"
 
+    @rx.var
+    def filtered_assignments(self) -> list[Assignment]:
+        filtered = assignments.copy()
 
-    @rx.var   #This is a computed state variable
-    def filtered_assignments(self) -> list[dict]:
-        filtered = assignments.copy()  # Start with a copy of all assignments
-
-        # Filter by status if needed
         if self.selected_status != "All Statuses":
             filtered = list(filter(lambda a: a["status"] == self.selected_status, filtered))
 
-        # Filter by search query if needed
         if self.search.strip():
             query = self.search.strip().lower()
             filtered = list(filter(
@@ -44,32 +47,6 @@ class AssignmentState(rx.State):
         return filtered
 
 
-# ---------- COMPONENT HELPERS ----------
-
-def status_tag(status: str) -> rx.Component:
-    color_map = {
-        "Unassigned": ("orange", "#fff7ed"),
-        "In Review": ("blue", "#eff6ff"),
-        "Completed": ("green", "#dcfce7"),
-    }
-    text_color, bg_color = color_map.get(status, ("#374151", "#f4f4f5"))  # fallback gray
-
-    return rx.box(
-        rx.text(status,
-                color=text_color,
-                font_size="sm",
-                font_weight="medium"),
-
-        bg=bg_color,
-        padding_x="3",
-        padding_y="1",
-        border_radius="xl",
-        # display="inline-block",
-        border=f"0.5px solid {text_color}",
-        border_color="lightgray",
-        width="fit-content",
-    )
-
 def action_button(status: str, id_: str) -> rx.Component:
     return rx.button(
         rx.cond(status == "Unassigned", "Assign", "Reassign"),
@@ -79,8 +56,17 @@ def action_button(status: str, id_: str) -> rx.Component:
         on_click=rx.redirect(f"/assign/{id_}"),
     )
 
+def render_status(status) -> rx.Component:
+    return rx.cond(
+        status == "Unassigned",
+        rx.badge("Unassigned", color_scheme="gray", variant="soft"),
+        rx.cond(
+            status == "In Review",
+            rx.badge("In Review", color_scheme="blue", variant="soft"),
+            rx.badge("Completed", color_scheme="green", variant="soft")
+        )
+    )
 
-# ---------- MAIN TABLE COMPONENT ----------
 
 def assignments_table() -> rx.Component:
     return rx.container(
@@ -123,27 +109,17 @@ def assignments_table() -> rx.Component:
                     ),
                     rx.table.body(
                         rx.foreach(
-                            AssignmentState.filtered_assignments,
+                            AssignmentState.filtered_assignments.to(list[Assignment]), 
                             lambda item: rx.table.row(
-                                rx.table.cell(
-                                    rx.text(item["id"], font_size="sm")
-                                ),
-                                rx.table.cell(
-                                    rx.text(item["employee"], font_size="sm")
-                                ),
-                                rx.table.cell(
-                                    rx.text(item["date"], font_size="sm")
-                                ),
+                                rx.table.cell(rx.text(item["id"], font_size="sm")),
+                                rx.table.cell(rx.text(item["employee"], font_size="sm")),
+                                rx.table.cell(rx.text(item["date"], font_size="sm")),
                                 rx.table.cell(
                                     rx.link("View", href=f"/details/{item['id']}", color="blue", font_size="sm", font_weight="medium")
                                 ),
-                                rx.table.cell(status_tag(item["status"])),
-                                rx.table.cell(
-                                    rx.text(item["reviewer"], font_size="sm")
-                                ),
-                                rx.table.cell(
-                                    rx.box(action_button(item["status"], item["id"]))
-                                ),
+                                rx.table.cell(get_admin_status_tag(item["status"])),
+                                rx.table.cell(rx.text(item["reviewer"], font_size="sm")),
+                                rx.table.cell(rx.box(action_button(item["status"], item["id"]))),
                             )
                         )
                     ),
@@ -164,5 +140,8 @@ def assignments_table() -> rx.Component:
         padding="4",
         width="100%",
     )
+
+
+@rx.page(route="/admin_assignments")
 def admin_assignments() -> rx.Component:
     return assignments_table()

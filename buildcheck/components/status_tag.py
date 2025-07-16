@@ -29,4 +29,3 @@ def freq_tag(freq: str) -> rx.Component:
         variant="soft",
         text_transform="capitalize",
     )
-
