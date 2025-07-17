@@ -2,7 +2,7 @@ import reflex as rx
 from typing import TypedDict
 from buildcheck.components.navbar import navbar
 from buildcheck.components.admin_status_tag import get_admin_status_tag
-
+from buildcheck.components.footer import footer
 
 class Assignment(TypedDict):
     id: str
@@ -82,9 +82,8 @@ def assignments_table() -> rx.Component:
             rx.table.cell(rx.box(action_button(item["status"], item["id"]))),
         )
 
-    return rx.container(
+    return navbar(), rx.container(
         rx.vstack(
-            navbar(),
             rx.heading("Blueprint Assignments", size="5", margin_top="1em"),
             rx.hstack(
                 rx.input(
@@ -141,7 +140,7 @@ def assignments_table() -> rx.Component:
         spacing="4",
         padding="4",
         width="100%",
-    )
+    ), footer()
 
 
 def admin_assignments() -> rx.Component:

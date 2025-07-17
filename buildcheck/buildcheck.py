@@ -1,39 +1,21 @@
 import os
 
 import reflex as rx
-# Load environment variables from .env file
-from dotenv import load_dotenv
-from supabase import create_client, Client
-
-import buildcheck.views.employee_upload as em
+from buildcheck.backend.supabase_client import supabase_client
+from . import views
 from buildcheck.views.admin_dashboard import am_dashboard
 from buildcheck.views.employee_view import employee_view
 from buildcheck.views.reviewer_assignment import rv_assignment
-from . import views
+from buildcheck.state.user_state import UserState
+import buildcheck.views.employee_upload as em
 
-load_dotenv()
-
-# Fetch Supabase credentials from environment variables
-supabase_url: str = os.environ.get("SUPABASE_URL")
-supabase_key: str = os.environ.get("SUPABASE_KEY")
-# Create the Supabase client
-supabase_client: Client = create_client(supabase_url, supabase_key)
-
-class State(rx.State):
+class State(UserState):
     is_new_account: bool = False
-    name: str = ""
-    badge_number: str = ""
-    email: str = ""
     password: str = ""
-    role: str = "employee"  # Default role
     roles: list[str] = ["admin", "employee", "reviewer"]
 
     def toggle_account_mode(self):
         self.is_new_account = not self.is_new_account
-
-    @rx.event
-    def set_role(self, value: str):
-        self.role = value
 
     @rx.event
     def submit(self):
@@ -47,7 +29,7 @@ class State(rx.State):
                     "role": self.role
                 }).execute()
                 if response.data:
-                    print(f"Account created for: {self.name}, {self.badge_number}, {self.email}, {self.role}")
+                    self.set_user(response.data[0])  # Set user info after successful creation
                     return rx.toast.success("Account created successfully!")
                 else:
                     return rx.toast.error("Access denied. Please make sure you filled all required data.")
@@ -55,28 +37,27 @@ class State(rx.State):
                 print(e)
                 return rx.toast.error("An error occurred during account creation.")
         else:
-            # Login: check if user exists in Supabase
             try:
                 response = supabase_client.table("users").select("*").eq("email", self.email).eq("password", self.password).single().execute()
                 if response.data:
-                    print(f"Login successful for: {response.data['name']}")
-                    return rx.redirect("/validation")
+                    self.set_user(response.data)  # Set user info after successful login
+                    if self.role == "admin":
+                        return rx.redirect("/admin-dashboard")
+                    elif self.role == "reviewer":
+                        return rx.redirect("/assignments")
+                    else:
+                        return rx.redirect("/upload")
                 else:
                     return rx.toast.error("Login failed. Please check your email and password.")
             except Exception as e:
                 print(e)
                 return rx.toast.error("An error occurred during login.")
 
-config = rx.Config(
-    app_name="buildcheck",
-    show_built_with_reflex=False,
-    use_single_port=True,
-)
+
 
 def index() -> rx.Component:
     # BuildCheck Login / Signup Page
     return rx.container(
-        rx.color_mode.button(position="top-right"),
         rx.center(
             rx.vstack(
                 rx.image(
@@ -105,7 +86,7 @@ def index() -> rx.Component:
                         rx.input(
                             placeholder="Email",
                             type="email",
-                            value=State.email,
+                            value=State.email.lower(),
                             on_change=State.set_email,
                         ),
                         rx.input(
@@ -137,7 +118,7 @@ def index() -> rx.Component:
                         rx.input(
                             placeholder="Email",
                             type="email",
-                            value=State.email,
+                            value=State.email.lower(),
                             on_change=State.set_email,
                         ),
                         rx.input(
