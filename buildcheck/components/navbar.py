@@ -5,7 +5,11 @@ from buildcheck.state.user_state import UserState
 def navbar() -> rx.Component:
     return rx.box(
         rx.hstack(
-            bclogo(),
+            rx.image(
+                src="/arch_logo.png",
+                width="auto",
+                height="70px",
+            ),
             rx.spacer(),
             # Conditionally render links based on role
             rx.cond(
@@ -18,7 +22,7 @@ def navbar() -> rx.Component:
                     UserState.role == "admin",
                     rx.fragment(
                         rx.link("Dashboard", href="/admin-dashboard"),
-                        rx.link("Assignments", href="/assignments"),
+                        rx.link("Assignments", href="/admin-assignments"),
                     ),
                     rx.cond(
                         UserState.role == "reviewer",

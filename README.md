@@ -4,8 +4,6 @@
 
 - Components library - https://reflex.dev/docs/library/
 - Templates to copy code from - https://reflex.dev/templates/
-- Enterprise Components (is free) - https://enterprise.reflex.dev/
-
 
 ## How to run the application
 
@@ -39,7 +37,6 @@ Do this instead of `pip install <package>`
 
 1. Run `reflex db makemigrations`
 2. Run `reflex db migrate`
-
 
 ## Authors
 

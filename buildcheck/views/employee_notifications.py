@@ -28,4 +28,8 @@ employee_notifs = [
 
 # Render the employee notifications page using the reusable component
 def employee_notifications() -> rx.Component:
-    return navbar(), notifications_page("Employee", employee_notifs), footer()
+    return rx.vstack(
+        navbar(),
+        notifications_page("Employee", employee_notifs),
+        footer()
+    )
