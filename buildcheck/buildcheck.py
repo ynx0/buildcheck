@@ -48,12 +48,12 @@ class State(rx.State):
                 }).execute()
                 if response.data:
                     print(f"Account created for: {self.name}, {self.badge_number}, {self.email}, {self.role}")
-                    return rx.toast.success("Account created successfully!") 
+                    return rx.toast.success("Account created successfully!")
                 else:
-                    return rx.toast.error("Access denied. Please make sure you filled all required data.") 
+                    return rx.toast.error("Access denied. Please make sure you filled all required data.")
             except Exception as e:
                 print(e)
-                return rx.toast.error("An error occurred during account creation.") 
+                return rx.toast.error("An error occurred during account creation.")
         else:
             # Login: check if user exists in Supabase
             try:
@@ -62,10 +62,10 @@ class State(rx.State):
                     print(f"Login successful for: {response.data['name']}")
                     return rx.redirect("/validation")
                 else:
-                    return rx.toast.error("Login failed. Please check your email and password.")  
+                    return rx.toast.error("Login failed. Please check your email and password.")
             except Exception as e:
                 print(e)
-                return rx.toast.error("An error occurred during login.") 
+                return rx.toast.error("An error occurred during login.")
 
 config = rx.Config(
     app_name="buildcheck",
@@ -80,7 +80,7 @@ def index() -> rx.Component:
         rx.center(
             rx.vstack(
                 rx.image(
-                    src="/logo.png", 
+                    src="/logo.png",
                     alt="ARCH Logo",
                     box_size="80px",
                     margin_bottom="4",
@@ -144,7 +144,7 @@ def index() -> rx.Component:
                             placeholder="Password",
                             type="password",
                             value=State.password,
-                            on_change=State.set_password,   
+                            on_change=State.set_password,
                         ),
                         rx.button(
                             "Log In",
