@@ -1,18 +1,18 @@
-import reflex as rx
-from supabase import create_client, Client
 import os
 
-from . import views
-from buildcheck.views.admin_dashboard import am_dashboard
-from buildcheck.components.navbar import navbar
-import buildcheck.views.employee_upload as em
-from buildcheck.views.reviewer_assignment import rv_assignment
-
-
-
+import reflex as rx
 # Load environment variables from .env file
 from dotenv import load_dotenv
+from supabase import create_client, Client
+
+import buildcheck.views.employee_upload as em
+from buildcheck.views.admin_dashboard import am_dashboard
+from buildcheck.views.employee_view import employee_view
+from buildcheck.views.reviewer_assignment import rv_assignment
+from . import views
+
 load_dotenv()
+
 # Fetch Supabase credentials from environment variables
 supabase_url: str = os.environ.get("SUPABASE_URL")
 supabase_key: str = os.environ.get("SUPABASE_KEY")
@@ -67,6 +67,11 @@ class State(rx.State):
                 print(e)
                 return rx.toast.error("An error occurred during login.")
 
+config = rx.Config(
+    app_name="buildcheck",
+    show_built_with_reflex=False,
+    use_single_port=True,
+)
 
 def index() -> rx.Component:
     # BuildCheck Login / Signup Page
@@ -166,33 +171,23 @@ def index() -> rx.Component:
         ),
     )
 
-
-
-
-
 app = rx.App(
     theme=rx.theme(
-        appearance="light", has_background=True, radius="large",
+        appearance="light",
+        has_background=True,
+        radius="large",
         # accent_color="grass"
-    ),
+    )
 )
 
-
-
-app.add_page(index)
+app.add_page(index, route="/", title="Login", description="Login or create an account")
 app.add_page(views.validation_page, route="/validation")
 app.add_page(views.employee_blueprint, route="/blueprint-pending")
-app.add_page(views.employee_notifications, route="/employee-notifcations")
+app.add_page(views.employee_notifications, route="/employee-notifications")
 app.add_page(views.admin_notifications, route="/admin-notifications")
 app.add_page(views.reviewer_notifications, route="/reviewer-notifications")
-
-app.add_page(
-    em.upload_page,
-    title="Employee Dashboard",
-    description="This page is where the employee can view their case."
-)
-
+app.add_page(em.upload_page, title="Employee Dashboard", description="This page is where the employee can view their case.")
 app.add_page(rv_assignment, title="Blueprint Assignment")
-app.add_page(am_dashboard, title="Admin Dashboard")
-
-
+app.add_page(employee_view, route="/employee-view", title="Employee View")
+app.add_page(views.admin_assignments, route="/admin-assignments", title="Admin Assignments")
+app.add_page(am_dashboard, route="/admin-dashboard", title="Admin Dashboard")
