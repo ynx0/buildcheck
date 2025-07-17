@@ -1,21 +1,16 @@
-import reflex as rx
-from buildcheck.views.employee_view import employee_view
-
-from supabase import create_client, Client
 import os
-from . import views
-import buildcheck.views.employee_upload as em
-from buildcheck.views.reviewer_assignment import rv_assignment
-from buildcheck.views.admin_assignments import admin_assignments
-from buildcheck.views.admin_dashboard import am_dashboard
-from buildcheck.views.employee_blueprint import employee_blueprint
-from buildcheck.views.employee_notifications import employee_notifications
-from buildcheck.views.reviewer_notifications import reviewer_notifications
-from buildcheck.views.admin_notifications import admin_notifications
 
-
+import reflex as rx
 # Load environment variables from .env file
 from dotenv import load_dotenv
+from supabase import create_client, Client
+
+import buildcheck.views.employee_upload as em
+from buildcheck.views.admin_dashboard import am_dashboard
+from buildcheck.views.employee_view import employee_view
+from buildcheck.views.reviewer_assignment import rv_assignment
+from . import views
+
 load_dotenv()
 
 # Fetch Supabase credentials from environment variables
