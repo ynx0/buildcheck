@@ -69,6 +69,19 @@ def render_status(status) -> rx.Component:
 
 
 def assignments_table() -> rx.Component:
+    def assignment_row(item):
+        return rx.table.row(
+            rx.table.cell(rx.text(item["id"], font_size="sm")),
+            rx.table.cell(rx.text(item["employee"], font_size="sm")),
+            rx.table.cell(rx.text(item["date"], font_size="sm")),
+            rx.table.cell(
+                rx.link("View", href=f"/details/{item['id']}", color="blue", font_size="sm", font_weight="medium")
+            ),
+            rx.table.cell(get_admin_status_tag(item["status"])),
+            rx.table.cell(rx.text(item["reviewer"], font_size="sm")),
+            rx.table.cell(rx.box(action_button(item["status"], item["id"]))),
+        )
+
     return rx.container(
         rx.vstack(
             navbar(),
@@ -109,18 +122,7 @@ def assignments_table() -> rx.Component:
                     ),
                     rx.table.body(
                         rx.foreach(
-                            AssignmentState.filtered_assignments.to(list[Assignment]), 
-                            lambda item: rx.table.row(
-                                rx.table.cell(rx.text(item["id"], font_size="sm")),
-                                rx.table.cell(rx.text(item["employee"], font_size="sm")),
-                                rx.table.cell(rx.text(item["date"], font_size="sm")),
-                                rx.table.cell(
-                                    rx.link("View", href=f"/details/{item['id']}", color="blue", font_size="sm", font_weight="medium")
-                                ),
-                                rx.table.cell(get_admin_status_tag(item["status"])),
-                                rx.table.cell(rx.text(item["reviewer"], font_size="sm")),
-                                rx.table.cell(rx.box(action_button(item["status"], item["id"]))),
-                            )
+                            AssignmentState.filtered_assignments.to(list[Assignment]), assignment_row
                         )
                     ),
                     striped=True,
