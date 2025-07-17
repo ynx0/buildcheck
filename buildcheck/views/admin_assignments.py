@@ -142,6 +142,5 @@ def assignments_table() -> rx.Component:
     )
 
 
-@rx.page(route="/admin_assignments")
 def admin_assignments() -> rx.Component:
     return assignments_table()
