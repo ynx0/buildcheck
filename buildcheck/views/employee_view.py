@@ -19,10 +19,11 @@ class BlueprintState(rx.State):
 def get_status_tag(status: str) -> rx.Component:
     return rx.box(
         rx.text(
-            status.capitalize(),
+            status,
             color=rx.cond(status == "approved", "green", "red"),
             font_weight="medium",
-            font_size="sm"
+            font_size="sm",
+            text_transform="uppercase"
         ),
         background_color=rx.cond(status == "approved", "#dcfce7", "#fee2e2"),
         border_radius="xl",
