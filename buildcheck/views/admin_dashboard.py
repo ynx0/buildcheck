@@ -4,7 +4,7 @@ from random import randint
 import calendar
 
 from buildcheck.components.footer import footer
-from buildcheck.components.navbar import navbar_admin
+from buildcheck.components.navbar import navbar
 from buildcheck.components.stat_card import stat_card
 from buildcheck.components.status_tag import freq_tag
 
@@ -255,7 +255,7 @@ def am_dashboard() -> rx.Component:
     return rx.vstack(
         rx.script(src=HTML2CANVAS_PRO_SRC),
         rx.script(src='/export-lib.js'),
-        navbar_admin(),
+        navbar(),
         rx.flex(
             rx.heading("Admin Dashboard", size="9"),
             rx.button("Export Report", on_click=rx.call_script("downloadPDF()", callback=AdminDashState.no_op)),

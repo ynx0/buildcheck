@@ -1,5 +1,5 @@
 import reflex as rx
-from buildcheck.backend.supabase_client import supabase
+from buildcheck.backend.supabase_client import supabase_client
 from . import views
 from buildcheck.views.admin_dashboard import am_dashboard
 import buildcheck.views.employee_upload as em
@@ -18,7 +18,7 @@ class State(UserState):
     def submit(self):
         if self.is_new_account:
             try:
-                response = supabase.table("users").insert({
+                response = supabase_client.table("users").insert({
                     "name": self.name,
                     "badge_number": self.badge_number,
                     "email": self.email,
@@ -35,7 +35,7 @@ class State(UserState):
                 return rx.toast.error("An error occurred during account creation.")
         else:
             try:
-                response = supabase.table("users").select("*").eq("email", self.email).eq("password", self.password).single().execute()
+                response = supabase_client.table("users").select("*").eq("email", self.email).eq("password", self.password).single().execute()
                 if response.data:
                     self.set_user(response.data)  # Set user info after successful login
                     if self.role == "admin":
