@@ -1,4 +1,4 @@
-from .validationView_reviewer import validation_page
+from .reviewer_validation import validation_page
 from .employee_blueprint import employee_blueprint
 from .employee_notifications import employee_notifications
 from .reviewer_notifications import reviewer_notifications
