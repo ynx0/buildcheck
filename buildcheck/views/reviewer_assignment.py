@@ -1,5 +1,5 @@
 import reflex as rx
-from buildcheck.components.navbar import navbar_reviewer
+from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
 from typing import List
@@ -91,7 +91,7 @@ def search() -> rx.Component:
 @rx.page(route='/assignments')
 def rv_assignment() -> rx.Component:
     return rx.vstack(
-        navbar_reviewer(),
+        navbar(),
         rx.heading("Assigned Blueprints", size="9"),
         blueprints_card(),
         search(),

@@ -1,5 +1,5 @@
 import reflex as rx
-from buildcheck.components.navbar import navbar_employee
+from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.progress_tracker import progress_tracker
 from buildcheck.state.user_state import UserState
@@ -47,7 +47,7 @@ class SelectState(UserState):
 def employee_blueprint() -> rx.Component:
     return rx.vstack(
         rx.box(on_mount=SelectState.on_load, style={"display": "none"}),
-        navbar_employee(),
+        navbar(),
         rx.heading("Overall Summary"),
         progress_tracker(),
         rx.hstack(rx.text("Blueprint ID:", size="4",),

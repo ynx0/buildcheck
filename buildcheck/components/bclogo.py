@@ -7,8 +7,6 @@ def bclogo() -> rx.Component:
         rx.image(
             src="/arch_logo.png",
             width="auto",
-            height="50px",
+            height="70px",
         ),
-        rx.heading("ARCH", size="6"),
-        align="center"
     )

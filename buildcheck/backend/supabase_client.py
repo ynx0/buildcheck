@@ -9,4 +9,4 @@ SUPABASE_URL: str = os.getenv("SUPABASE_URL")
 SUPABASE_KEY: str = os.getenv("SUPABASE_KEY")
 
 # Create a single, reusable Supabase client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase_client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)

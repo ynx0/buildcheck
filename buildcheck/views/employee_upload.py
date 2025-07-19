@@ -1,5 +1,5 @@
 import reflex as rx
-from buildcheck.components.navbar import navbar_employee
+from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
 
@@ -128,7 +128,7 @@ def upload_table() -> rx.Component:
 @rx.page(route='/upload')
 def upload_page() -> rx.Component:
     return rx.vstack(
-        navbar_employee(),
+        navbar(),
         rx.center(
             upload_card(),
             padding_y="4em"
