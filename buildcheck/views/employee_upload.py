@@ -110,7 +110,7 @@ def upload_table() -> rx.Component:
                     rx.table.cell(upload["id"], justify="center"),
                     rx.table.cell(upload["date"], justify="center"),
                     rx.table.cell(status_tag(upload["status"]), justify="center"),
-                    rx.table.cell(rx.link("view", href="#"), justify="center"),
+                    rx.table.cell(rx.link("view", href="/blueprint-pending"), justify="center"),
                 )
                 for upload in uploads
             ]
@@ -135,8 +135,8 @@ def upload_page() -> rx.Component:
         ),
         rx.heading("Recent Upload Activity", size="9", mt="3em"),
         upload_table(),
-        footer(),
         spacing="3",
         align="center",
         padding="3",
-    )
+    ), footer()
+

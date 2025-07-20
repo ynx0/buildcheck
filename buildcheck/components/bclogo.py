@@ -5,10 +5,8 @@ import reflex as rx
 def bclogo() -> rx.Component:
     return rx.hstack(
         rx.image(
-            src="/logo.png",
+            src="/arch_logo.png",
             width="auto",
-            height="100px",
+            height="70px",
         ),
-        # rx.heading("ARCH", size="6"),
-        # align="center"
     )
