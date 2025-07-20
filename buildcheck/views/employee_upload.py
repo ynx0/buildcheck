@@ -3,6 +3,7 @@ from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
 from buildcheck.backend.supabase_client import supabase_client
+from buildcheck.state import user_state
 from buildcheck.state.user_state import UserState
 
 
@@ -16,8 +17,6 @@ class EmployeeUploadState(rx.State):
         if not files:
             yield rx.toast.error("No files selected.")
             return
-
-            
         file = files[0]
         data = await file.read()
         path = rx.get_upload_dir() / file.name
@@ -41,7 +40,7 @@ class EmployeeUploadState(rx.State):
             if not user_data:
                 raise ValueError(f"No user found for email: {email}")
 
-            user_id = user_data("id")
+            user_id = user_data["id"]
 
 
             # Fetch uploaded blueprints by the user
@@ -51,6 +50,9 @@ class EmployeeUploadState(rx.State):
 
             case_data = case_response.data or []
 
+
+            for case in case_data:
+                print(f"[DEBUG] Case: {case}")
             self.uploads = [
                 {
                     "id": c.get("id"),
@@ -162,4 +164,5 @@ def upload_page() -> rx.Component:
         spacing="3",
         align="center",
         padding="3",
-    ), footer()
+    ), 
+footer()
