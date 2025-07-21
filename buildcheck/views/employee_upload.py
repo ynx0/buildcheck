@@ -9,6 +9,7 @@ from typing import List
 
 
 
+
 class EmployeeUploadState(rx.State):
     uploads: List[dict] = []
 
@@ -57,12 +58,18 @@ class EmployeeUploadState(rx.State):
 
 
         # create case
-        response = supabase_client.table("cases").insert({
+        response = supabase_client.table("cases").upsert({
             "submitter_id": uid,
             "blueprint_path": file.name,
             "reviewer_id": reviewer_id,
-
-        }).execute()
+            # include default data since in case of conflict
+            # we want to reset things like the status.
+            # without this, the stale status would remain
+            "status": "pending",
+            "reviewed_at": None,
+            "ai_decision": None,
+            "reviewer_comment": None,
+        }, on_conflict="submitter_id").execute()
 
         if response.data:
             self.uploads += response.data
@@ -70,9 +77,6 @@ class EmployeeUploadState(rx.State):
 
         yield rx.clear_selected_files("upload")
         yield rx.toast.success('done')
-
-
-
 
 
 
