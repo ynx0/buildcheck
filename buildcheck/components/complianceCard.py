@@ -13,7 +13,7 @@ class ValidationState(UserState):
     def load_report(self):
         # Loads the case data for the current user from the database
         try:
-            user_id_int = int(str(self.user_id))
+            user_id_int = int(self.user_id)
             response1 = supabase_client.table("cases").select("*").eq("submitter_id", user_id_int).single().execute()
             self.case_id = response1.data["id"]
             self.case_result = response1.data["status"]

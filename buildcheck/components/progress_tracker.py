@@ -1,6 +1,6 @@
 import reflex as rx
-from buildcheck.backend.supabase_client import supabase_client
 from buildcheck.state.user_state import UserState
+from buildcheck.backend.supabase_client import supabase_client
 
 # State class to manage the case's progress for the current user
 class CaseState(UserState):
