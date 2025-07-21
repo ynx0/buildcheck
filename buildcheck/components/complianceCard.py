@@ -8,6 +8,7 @@ class ValidationState(UserState):
     violations: list[str] = []
     guidelines: list[dict] = []
     case_id: int = 0 
+    case_result: str = ""  # Default case result status
     @rx.event
     def load_report(self):
         # Loads the case data for the current user from the database
@@ -15,6 +16,7 @@ class ValidationState(UserState):
             user_id_int = int(str(self.user_id))
             response1 = supabase_client.table("cases").select("*").eq("submitter_id", user_id_int).single().execute()
             self.case_id = response1.data["id"]
+            self.case_result = response1.data["status"]
             response2 = supabase_client.table("violations").select("*").eq("case_id", self.case_id).execute()
             self.violations = [row["guideline_code"] for row in response2.data]
             response3 = supabase_client.table("guidelines").select("*").execute() 
@@ -43,12 +45,7 @@ def compliance_card() -> rx.Component:
                     rx.hstack(
                         rx.icon(tag="triangle_alert", color="orange", size=20),
                         rx.vstack(
-                            rx.text("Partial Compliance", font_size="lg", font_weight="bold"),
-                            rx.text(
-                                "Your plans meet most requirements but need some adjustments.",
-                                font_size="sm",
-                                color="gray"
-                            ),
+                            rx.text(f'This blueprint is {ValidationState.case_result.upper()}', font_size="lg", font_weight="bold"),
                             spacing="1"
                         ),
                         spacing="4",
