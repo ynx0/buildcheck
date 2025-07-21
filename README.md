@@ -1,5 +1,13 @@
 # buildcheck
 
+## Motivation
+
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/d3d71cfa-3f16-4d98-855d-adb6a9a8b1a8" />
+
+
+This is you whenever you feel like it's impossible.
+
+
 ## Reflex resources
 
 - Components library - https://reflex.dev/docs/library/
