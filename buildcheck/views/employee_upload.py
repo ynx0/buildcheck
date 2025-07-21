@@ -57,7 +57,7 @@ class EmployeeUploadState(rx.State):
             yield rx.toast.warning("could not assign to reviewer")
 
 
-        # create case
+        # create case - overwrite old one
         response = supabase_client.table("cases").upsert({
             "submitter_id": uid,
             "blueprint_path": file.name,
@@ -72,7 +72,8 @@ class EmployeeUploadState(rx.State):
         }, on_conflict="submitter_id").execute()
 
         if response.data:
-            self.uploads += response.data
+            # overwrite old update
+            self.uploads = [response.data[0]]
             # print("response was", response.data)
 
         yield rx.clear_selected_files("upload")
