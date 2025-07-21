@@ -3,6 +3,7 @@ from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.progress_tracker import progress_tracker, CaseState
 from buildcheck.backend.supabase_client import supabase_client
+from buildcheck.components.complianceCard import compliance_card
 
 def statusOfCase() -> rx.Component:
     return rx.cond(
@@ -43,7 +44,10 @@ def employee_blueprint() -> rx.Component:
                 rx.vstack(
                     rx.heading("Compliance Report", size="5"),
                     statusOfCase(),
-                    rx.button("Resubmit", background_color="#197dca", size="3", marginTop="2em", on_click=rx.redirect("/upload")),
+                    rx.cond(CaseState.current_step == 3, 
+                        compliance_card(), 
+                        rx.button("Resubmit", background_color="#197dca", size="3", marginTop="2em", on_click=rx.redirect("/upload"))
+                    ),
                 ),
                 rx.image(
                     src="./blueprint.jpg",

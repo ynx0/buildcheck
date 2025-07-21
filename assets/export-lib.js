@@ -1,16 +1,13 @@
-
-
 async function captureBodyAsImage() {
-    const canvas = await html2canvas(document.body);
-    return canvas.toDataURL('image/png');
+  const canvas = await html2canvas(document.body);
+  return canvas.toDataURL("image/png");
 }
-
 
 function downloadImage(dataUrl) {
   // Create a temporary link element
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = dataUrl;
-  link.download = 'report.png';
+  link.download = "report.png";
 
   // Append to DOM, trigger click, then remove
   document.body.appendChild(link);
@@ -19,5 +16,5 @@ function downloadImage(dataUrl) {
 }
 
 function downloadPDF() {
-    captureBodyAsImage().then(dataUrl => downloadImage(dataUrl));
+  captureBodyAsImage().then((dataUrl) => downloadImage(dataUrl));
 }
