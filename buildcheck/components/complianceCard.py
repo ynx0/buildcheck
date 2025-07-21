@@ -37,7 +37,7 @@ def guideline_status(guideline: str) -> rx.Component:
 def compliance_card() -> rx.Component:
     return rx.container(
             rx.script(src="https://unpkg.com/html2canvas-pro@1.5.11/dist/html2canvas-pro.js"),
-            rx.script(src='./export-lib.js'),
+            rx.script(src='/export-lib.js'),
             rx.box(
                 rx.vstack(
                     rx.hstack(

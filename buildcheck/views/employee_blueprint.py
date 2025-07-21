@@ -50,7 +50,7 @@ def employee_blueprint() -> rx.Component:
                     ),
                 ),
                 rx.image(
-                    src="./blueprint.jpg",
+                    src="/blueprint.jpg",
                     alt="Blueprint Image",
                     width="50%",
                 )
