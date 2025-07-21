@@ -7,27 +7,6 @@ from buildcheck.backend.supabase_client import supabase_client
 from typing import List
 
 
-# TODO
-# 1. read all current uploads
-# 2. on upload, write a new line to db, and fill in the reviwer_id with a hardcoded reviewer
-# 3.
-
-
-
-
-_ = {'id': 1,
- 'reviewed_at': '2025-07-17T12:15:14.86014+00:00',
- 'submitter_id': 2,
- 'reviewer_id': None,
- 'status': 'pending',
- 'ai_decision': None,
- 'reviewer_comment': None,
- 'submitted_at': '2025-07-17T12:15:14.86014',
- 'blueprint_path': 'floorplan1.pdf'}
-
-
-
-
 
 
 class EmployeeUploadState(rx.State):
