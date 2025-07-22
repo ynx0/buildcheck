@@ -19,6 +19,7 @@ class UserState(rx.State):
         self.role = user_data["role"]
         self.badge_number = str(user_data["badge_number"])
         self.nameIntials = "".join(part[0].upper() for part in self.name.split() if part)  # Update initials after setting name 
+
     def clear_user(self):
         #Clear user information on logout.
         self.user_id = ""
