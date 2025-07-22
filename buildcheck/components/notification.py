@@ -1,62 +1,81 @@
-import reflex as rx  # Import the Reflex library to build UI components
-from datetime import datetime  # Importing Python's datetime tools to manage timestamps 
+import reflex as rx  # Reflex for building UI components
 
-# FUNCTION 1 
-# A helper function to format the timestamp in a readable way
-# For example: "Fri, Sep 15, 08:00 AM (2 days ago)"
-def format_datetime(dt: datetime) -> str:
-    return dt.strftime("%a, %b %d, %I:%M %p") + f" ({(datetime.now() - dt).days} days ago)"
+# 1. Format timestamp strings for display 
+def format_timestamp(timestamp_str: str) -> str:
+    """Convert database timestamp string to readable format"""
+    try:
+        # Parse the timestamp string from database
+        from datetime import datetime
+        dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+        # Return formatted date and time
+        return dt.strftime("%b %d, %Y at %I:%M %p")
+    except:
+        # Return original string if parsing fails
+        return timestamp_str
 
-# FUNCTION 2
-# This function defines a reusable like the (notification card)
-# A "component" in Reflex is like a building block (like a box or button) used to create the web interface
-# Parameters:  
-# - title: The heading of the notification (e.g., "Submission Received")
-# - message: The body text (e.g., "Your blueprint has been received.")
-# - timestamp: The time the notification was created
-def notification_card(title: str, message: str, timestamp: datetime) -> rx.Component:
-    return rx.box(  # This box is the outer card for one notification
-        rx.hstack(  # A horizontal layout to show message on the left and timestamp on the right
-            rx.vstack(  # Stack title and message vertically
-                rx.text(title, weight="bold"),  # Notification title in bold
-                rx.text(message, size="2"),     # Notification message below the title
+
+# 2. Single Notification Card Component (larger size)
+def notification_card(title: str, message: str, timestamp: str) -> rx.Component:
+    """Create individual notification card with title, message, and timestamp"""
+    return rx.box(
+        rx.hstack(
+            # Left side: notification content
+            rx.vstack(
+                # Bold notification title
+                rx.text(title, weight="bold", size="4"), 
+                # Notification message text
+                rx.text(message, size="3"), 
+                align_items="start",
+                spacing="2",
             ),
-            rx.spacer(),  # Pushes timestamp all the way to the right
-            rx.text(format_datetime(timestamp), size="1"),  # Formatted date text
+            # Push timestamp to the right side
+            rx.spacer(),
+            # Right side: formatted timestamp
+            rx.text(
+                format_timestamp(timestamp), 
+                size="2",  
+                color="gray"
+            ),
+            align_items="start",
         ),
-        border="1px solid #CBD5E0",  # Light border around the notification
-        border_radius="md",          # Medium rounded corners
-        padding="1em",               # Internal spacing inside the box
-        background_color="#F8FAFC",  # Light gray background
-        margin_bottom="1em"          # Space below each notification
+        # Card styling: larger padding for bigger appearance
+        border="1px solid #CBD5E0",
+        border_radius="md", 
+        padding="1.5em",  
+        background_color="#F8FAFC",
+        margin_bottom="1em",
+        width="100%",
+        min_height="80px",  # Ensure minimum card height
     )
 
-# FUNCTION 3 
-# This function builds the entire notifications page for any user type
-# It takes in:
-# - role: The user role ("Employee", "Admin", & "Reviewer") to customize the page heading
-# - notifications: A list of dictionaries with title, message, and timestamp for each notification
-def notifications_page(role: str, notifications: list[dict]) -> rx.Component:
-    return rx.container(  # This wraps the entire page content
 
-        # Page Header with Bell Icon and Heading 
+# 3. Notifications Page Layout
+def notifications_page(role: str, notifications: list[dict]) -> rx.Component:
+    """Create the main notifications display area with header and notification list"""
+    return rx.container(
+        # Header with bell icon and role-specific title
         rx.hstack(
-            rx.icon(tag="bell"),  # Bell icon on the left
-            rx.heading(f"{role} Notifications", size="6"),  # Heading with the user's role
+            rx.heading(f"{role} Notifications", size="5"),
             spacing="3",
             margin_bottom="1em"
         ),
 
-        # Search Bar (It is non-functioning, so UI only for now) 
+        # Search input (UI only, non-functional)
         rx.input(
-            placeholder="Search",  # Placeholder text inside the search box
-            width="300px",         # Width of the search field
-            margin_bottom="1.5em"  # Space below the input
+            placeholder="Search notifications...",
+            width="300px",
+            margin_bottom="1.5em"
         ),
 
-        # List of Notifications 
-        # For each notification in the list, generate a styled card using notification_card()
-        *[notification_card(n["title"], n["message"], n["timestamp"]) for n in notifications],
-
-        padding="2em"  # Add space around the whole page for better layout
+        # Display each notification using the notification_card component
+        rx.foreach(
+            notifications, 
+            lambda item: notification_card(
+                item["title"], 
+                item["message"], 
+                item["created_at"]  # Use created_at field for timestamp
+            )
+        ),
+        padding="2em",
+        max_width="800px",  # Limit container width for better readability
     )
