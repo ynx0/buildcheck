@@ -141,9 +141,7 @@ def upload_table() -> rx.Component:
                         rx.table.cell(rx.link("View", href="/blueprint-pending"), justify="center"),
                     )
                 ),
-                rx.table.row(
-                    rx.table.cell("No activity found", col_span=4, justify="center")
-                )
+
             )
         ),
         width="100%",
@@ -164,5 +162,5 @@ def upload_page() -> rx.Component:
         spacing="3",
         align="center",
         padding="3",
-    ), 
-footer()
+
+    ), footer()

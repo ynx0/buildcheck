@@ -7,6 +7,13 @@ from buildcheck.state.user_state import UserState
 from typing import List
 
 
+data: List[dict] = [
+    {"id": "444", "submitter": "Noura Alnaimi", "date": "2025-7-16", "status": "pending"},
+    {"id": "411", "submitter": "John Robinson", "date": "2025-5-24", "status": "pending"},
+    {"id": "405", "submitter": "David Lee", "date": "2024-9-14", "status": "pending"},
+    {"id": "403", "submitter": "Christopher Clark", "date": "2024-8-29", "status": "rejected"},
+]
+
 class ReviewerAssignmentState(rx.State):
     assignments: List[dict] = []
     bp_total: int = 0

@@ -13,12 +13,12 @@ class UserState(rx.State):
 
     def set_user(self, user_data: dict):
         #Set user information from login response.
-        # have to fix this --> Expected field 'UserState.user_id' to receive type '<class 'str'>', but got '2' of type '<class 'int'>'.
-        self.user_id = str(user_data.get("id",""))
-        self.name = str(user_data.get("name",""))
-        self.email = str(user_data.get("email",""))
-        self.role = str(user_data.get("role",""))
-        self.badge_number = str(user_data.get("badge_number", ""))
+
+        self.user_id = user_data["id"]
+        self.name = user_data["name"]
+        self.email = user_data["email"]
+        self.role = user_data["role"]
+        self.badge_number = user_data["badge_number"]
         self.nameIntials = "".join(part[0].upper() for part in self.name.split() if part)  # Update initials after setting name 
     def clear_user(self):
         #Clear user information on logout.
