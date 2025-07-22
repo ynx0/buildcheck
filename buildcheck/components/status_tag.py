@@ -2,16 +2,18 @@ import reflex as rx
 
 
 
-def status_tag(status: str) -> rx.Component:
-    colors = {
-        "pending": "yellow",
-        "approved": "green",
-        "rejected": "red",
-        "canceled": "gray",
-    }
+def status_tag(status: rx.Var[str]) -> rx.Component:
+
     return rx.badge(
         status,
-        color_scheme=colors.get(status, "gray"),
+        color_scheme=rx.match(
+            status,
+            ("pending", "yellow"),
+            ("approved", "green"),
+            ("rejected", "red"),
+            ("canceled", "gray"),
+            "gray"
+        ),
         variant="soft",
         text_transform="capitalize",
     )
