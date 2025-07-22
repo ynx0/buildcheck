@@ -15,8 +15,7 @@ class ValidationState(rx.State):
         # Loads the case data for the current user from the database
         try:
             user_state = await self.get_state(UserState)
-            user_id_int = int(user_state.user_id)
-            response1 = supabase_client.table("cases").select("*").eq("submitter_id", user_id_int).single().execute()
+            response1 = supabase_client.table("cases").select("*").eq("submitter_id", user_state.user_id).single().execute()
             self.case_id = response1.data["id"]
             self.case_result = response1.data["status"]
             response2 = supabase_client.table("violations").select("*").eq("case_id", self.case_id).execute()

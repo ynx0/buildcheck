@@ -4,7 +4,7 @@ class UserState(rx.State):
     #Global user state management.
     
     # User information
-    user_id: str = ""
+    user_id: int = ""
     name: str = ""
     nameIntials: str = ""
     email: str = ""
@@ -13,7 +13,7 @@ class UserState(rx.State):
 
     def set_user(self, user_data: dict):
         #Set user information from login response.
-        self.user_id = str(user_data["id"])
+        self.user_id = user_data["id"]
         self.name = user_data["name"]
         self.email = user_data["email"]
         self.role = user_data["role"]

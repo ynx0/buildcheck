@@ -26,11 +26,10 @@ class CaseState(rx.State):
         # Loads the case data for the current user from the database
         try:
             user_state = await self.get_state(UserState)
-            user_id_int = int(str(user_state.user_id))
             response = (
                 supabase_client.table("cases")
                 .select("*")
-                .eq("submitter_id", user_id_int)
+                .eq("submitter_id", user_state.user_id)
                 .single()
                 .execute()
             )
@@ -43,18 +42,13 @@ class CaseState(rx.State):
 
 # Determines the status string for a given step in the progress tracker
 def get_status(step_number: int, current_step: int, is_last: bool) -> str:
-    return rx.cond(
-        step_number < current_step,
-        "completed",
-        rx.cond(
-            (step_number == current_step) & is_last,
-            "completed",
-            rx.cond(
-                step_number == current_step,
-                "current",
-                "pending"
-            )
-        )
+
+    return rx.match(
+        True,
+        (step_number < current_step, "completed"),
+        (step_number == current_step & is_last, "completed"),
+        (step_number == current_step, "current"),
+        "pending"
     )
 
 # Returns style properties for the progress circle based on its status

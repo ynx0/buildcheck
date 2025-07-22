@@ -21,15 +21,15 @@ class AIValidationState(rx.State):
         # Loads the case data for the current user from the database
         try:
             user_state = await self.get_state(UserState)
-            user_id_int = int(user_state.user_id)
-            response1 = supabase_client.table("cases").select("*").eq("reviewer_id", user_id_int).execute()
-            self.case_id = str(response1.data[0]["id"])
-            self.case_data = response1.data
-            self.listOfCases = [str(case["id"]) for case in self.case_data]
-            response2 = supabase_client.table("violations").select("guideline_code").eq("case_id", self.case_id).execute()
-            self.violations = [row["guideline_code"] for row in response2.data]
-            response3 = supabase_client.table("guidelines").select("*").execute() 
-            self.guidelines = response3.data
+            response1 = supabase_client.table("cases").select("*").eq("reviewer_id", user_state.user_id).execute()
+            if len(response1.data) != 0:
+                self.case_id = str(response1.data[0]["id"])
+                self.case_data = response1.data
+                self.listOfCases = [str(case["id"]) for case in self.case_data]
+                response2 = supabase_client.table("violations").select("guideline_code").eq("case_id", self.case_id).execute()
+                self.violations = [row["guideline_code"] for row in response2.data]
+                response3 = supabase_client.table("guidelines").select("*").execute() 
+                self.guidelines = response3.data
         except Exception as e:
             print("Exception in load_data:", e)
             traceback.print_exc() 
