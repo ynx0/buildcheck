@@ -18,18 +18,50 @@ class Assignment(TypedDict):  # Represents a blueprint assignment
     status: str
     reviewer: str
 
+def assign_dialog() -> rx.Component:
+    return rx.dialog.content(
+        rx.dialog.title("Assign Reviewer"),
+        rx.dialog.description("Select a reviewer to assign to this blueprint."),
+        rx.select(
+            items=AssignmentState.reviewer_options,
+            value=AssignmentState.selected_reviewer,
+            on_change=AssignmentState.set_selected_reviewer,
+            placeholder="Choose a reviewer",
+            width="100%",
+        ),
+        rx.hstack(
+            rx.dialog.close(
+                rx.button("Cancel", variant="ghost")
+            ),
+            rx.button(
+                "Submit",
+                on_click=AssignmentState.reassign_selected_case,
+                color_scheme="blue",
+                is_disabled=AssignmentState.selected_reviewer == "",
+            ),
+            justify="end",
+            spacing="4",
+        ),
+        bg="white",
+        padding="4",
+        border_radius="lg",
+        box_shadow="lg",
+        width="400px",
+    )
+
 
 def action_button(status: str, id_: str) -> rx.Component:
-    """Return an Assign/Reassign button based on status."""
-    return rx.button(
-        rx.cond(status == "Unassigned", "Assign", "Reassign"),
-        size="2",
-        variant="outline",
-        font_size="sm",
-        on_click=[
-            AssignmentState.set_selected_case(id_),
-            AssignmentState.open_modal(),
-        ],
+    return rx.dialog.root(
+        rx.dialog.trigger(
+            rx.button(
+                rx.cond(status == "Unassigned", "Assign", "Reassign"),
+                size="2",
+                variant="outline",
+                font_size="sm",
+                on_click=AssignmentState.set_selected_case(id_),
+            )
+        ),
+        assign_dialog()
     )
 
 
@@ -115,63 +147,7 @@ def assignments_table() -> rx.Component:
                 ),
                 width="100%",
             ),
-            # Modal for reassigning
-            rx.cond(
-                AssignmentState.is_modal_open,
-                rx.box(
-                    rx.box(
-                        position="fixed",
-                        top=0,
-                        left=0,
-                        width="100vw",
-                        height="100vh",
-                        bg="rgba(0,0,0,0.4)",
-                        z_index=1000,
-                    ),
-                    rx.center(
-                        rx.card(
-                            rx.vstack(
-                                rx.heading(
-                                    rx.cond(
-                                        AssignmentState.selected_case_id == "",
-                                        "Assign Reviewer",
-                                        "Reassign Reviewer",
-                                    ),
-                                    size="4"
-                                ),
-                                rx.text("Select Reviewer:"),
-                                rx.select(
-                                    items=AssignmentState.reviewer_options,
-                                    value=AssignmentState.selected_reviewer,
-                                    on_change=AssignmentState.set_selected_reviewer,
-                                    width="100%",
-                                ),
-                                rx.hstack(
-                                    rx.button("Cancel", on_click=AssignmentState.close_modal, variant="ghost"),
-                                    rx.button(
-                                        "OK",
-                                        color_scheme="blue",
-                                        on_click=AssignmentState.reassign_selected_case,
-                                        is_disabled=AssignmentState.selected_reviewer == "",
-                                    ),
-                                ),
-                                spacing="4",
-                            ),
-                            width="350px",
-                            padding="2em",
-                            box_shadow="lg",
-                            bg="white",
-                            z_index=1001,
-                        ),
-                        position="fixed",
-                        top="50%",
-                        left="50%",
-                        transform="translate(-50%, -50%)",
-                        z_index=1001,
-                    ),
-
-                ),
-            ),
+           
             rx.hstack(
                 rx.text("Showing filtered results", font_size="sm", color="gray"),
                 justify="end",
