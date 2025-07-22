@@ -85,12 +85,7 @@ def assignments_table() -> rx.Component:
                     size="2",
                 ),
                 rx.button("Clear Filters", on_click=AssignmentState.reset_filters, size="2"),
-                rx.button(
-                    "Assign New Blueprint",
-                    color_scheme="blue",
-                    size="2",
-                    on_click=AssignmentState.open_new_assign_modal(),
-                ),
+
                 spacing="4",
                 margin_y="1",
                 width="100%",
@@ -174,68 +169,8 @@ def assignments_table() -> rx.Component:
                         transform="translate(-50%, -50%)",
                         z_index=1001,
                     ),
+
                 ),
-                None,
-            ),
-            # Modal for assigning new blueprint
-            rx.cond(
-                AssignmentState.is_new_assign_modal_open,
-                rx.box(
-                    rx.box(
-                        position="fixed",
-                        top=0,
-                        left=0,
-                        width="100vw",
-                        height="100vh",
-                        bg="rgba(0,0,0,0.4)",
-                        z_index=1000,
-                    ),
-                    rx.center(
-                        rx.card(
-                            rx.vstack(
-                                rx.heading("Assign New Blueprint", size="4"),
-                                rx.text("Select Blueprint:"),
-                                rx.select(
-                                    items=AssignmentState.unassigned_blueprints,
-                                    value=AssignmentState.selected_new_blueprint,
-                                    on_change=AssignmentState.set_selected_new_blueprint,
-                                    width="100%",
-                                ),
-                                rx.text("Select Reviewer:"),
-                                rx.select(
-                                    items=AssignmentState.reviewer_options,
-                                    value=AssignmentState.selected_new_reviewer,
-                                    on_change=AssignmentState.set_selected_new_reviewer,
-                                    width="100%",
-                                ),
-                                rx.hstack(
-                                    rx.button("Cancel", on_click=AssignmentState.close_new_assign_modal, variant="ghost"),
-                                    rx.button(
-                                        "Assign",
-                                        color_scheme="blue",
-                                        on_click=AssignmentState.assign_new_blueprint,
-                                        is_disabled=(
-                                            AssignmentState.selected_new_blueprint == ""
-                                            or AssignmentState.selected_new_reviewer == ""
-                                        ),
-                                    ),
-                                ),
-                                spacing="4",
-                            ),
-                            width="350px",
-                            padding="2em",
-                            box_shadow="lg",
-                            bg="white",
-                            z_index=1001,
-                        ),
-                        position="fixed",
-                        top="50%",
-                        left="50%",
-                        transform="translate(-50%, -50%)",
-                        z_index=1001,
-                    ),
-                ),
-                None,
             ),
             rx.hstack(
                 rx.text("Showing filtered results", font_size="sm", color="gray"),

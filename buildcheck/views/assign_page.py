@@ -7,67 +7,8 @@ from buildcheck.state.user_state import UserState
 # This page to mange blueprint assignments and reviewer selection
 
 class AssignmentState(rx.State):
-    # Modal state for assigning new blueprint
-    is_new_assign_modal_open: bool = False
-    unassigned_blueprints: list[str] = []
-    selected_new_blueprint: str = ""
-    selected_new_reviewer: str = ""
-    @rx.event
-
-    def open_new_assign_modal(self):
-        # Fetch unassigned blueprints from DB (reviewer_id IS NULL)
-        cases = supabase_client.table("cases").select("id").is_("reviewer_id", None).execute().data
-        self.unassigned_blueprints = [f"BP{c['id']:03}" for c in cases] if cases else []
-        # Fetch reviewers if not already loaded
-        if not self.reviewer_options:
-            reviewers = supabase_client.table("users").select("id, name").eq("role", "reviewer").execute().data
-            self.reviewer_options = [f"{r['id']} - {r['name']}" for r in reviewers]
-        self.selected_new_blueprint = ""
-        self.selected_new_reviewer = ""
-        self.is_new_assign_modal_open = True
-
-    @rx.event
-    def close_new_assign_modal(self):
-        self.is_new_assign_modal_open = False
-        self.selected_new_blueprint = ""
-        self.selected_new_reviewer = ""
-
-    @rx.event
-    def set_selected_new_blueprint(self, blueprint: str):
-        self.selected_new_blueprint = blueprint
-
-    @rx.event
-    def set_selected_new_reviewer(self, reviewer: str):
-        self.selected_new_reviewer = reviewer
-
-    @rx.event
-    def assign_new_blueprint(self):
-        if not self.selected_new_blueprint or not self.selected_new_reviewer:
-            yield rx.toast.error("Please select both a blueprint and a reviewer.")
-            return
-        reviewer_id = self.selected_new_reviewer.split(" - ")[0]
-        try:
-            digits = "".join(filter(str.isdigit, self.selected_new_blueprint))
-            if not digits:
-                raise ValueError("No digits found in blueprint id")
-            case_number = int(digits)
-        except ValueError:
-            yield rx.toast.error("Invalid blueprint ID.")
-            return
-        supabase_client.table("cases").update({
-            "reviewer_id": int(reviewer_id),
-            "status": "pending"
-        }).eq("id", case_number).execute()
-        yield rx.toast.success(f"Reviewer assigned to Blueprint {self.selected_new_blueprint}")
-        self.is_new_assign_modal_open = False
-        self.selected_new_blueprint = ""
-        self.selected_new_reviewer = ""
-        # Reload assignments
-        yield AssignmentState.load_assignments()
-    # Modal state for in-page assign/reassign
-    is_modal_open: bool = False
-    selected_reviewer: str = ""
     
+   
     @rx.event
     def open_modal(self):
         self.is_modal_open = True
@@ -118,6 +59,9 @@ class AssignmentState(rx.State):
             s = self.search.lower()
             filtered = [a for a in filtered if s in a["id"].lower() or s in a["employee"].lower()]
         return filtered
+    
+    is_modal_open: bool = False
+    selected_reviewer: str = ""
     selected_case_id: str = ""
     current_reviewer_name: str = ""
     reviewer_options: list[str] = []
@@ -169,7 +113,7 @@ class AssignmentState(rx.State):
             {
                 "id": f"BP{case['id']:03}",
                 "employee": user_map.get(str(case["submitter_id"]), "Unknown"),
-                "date": case["submitted_at"].split("T")[0],
+                "date": case["submitted_at"].split("T")[0] if case["submitted_at"] else "N/A",
                 "status": case["status"],
                 "reviewer": user_map.get(str(case["reviewer_id"]), "Not Assigned"),
                 # Example: add a flag if this assignment belongs to the current user
