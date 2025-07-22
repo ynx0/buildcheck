@@ -2,18 +2,20 @@ import reflex as rx
 from buildcheck.components.status_tag import status_tag
 from buildcheck.state.user_state import UserState
 from buildcheck.backend.supabase_client import supabase_client
+import traceback
 
 
-class ValidationState(UserState):
+class ValidationState(rx.State):
     violations: list[str] = []
     guidelines: list[dict] = []
     case_id: int = 0 
     case_result: str = ""  # Default case result status
     @rx.event
-    def load_report(self):
+    async def load_report(self):
         # Loads the case data for the current user from the database
         try:
-            user_id_int = int(self.user_id)
+            user_state = await self.get_state(UserState)
+            user_id_int = int(user_state.user_id)
             response1 = supabase_client.table("cases").select("*").eq("submitter_id", user_id_int).single().execute()
             self.case_id = response1.data["id"]
             self.case_result = response1.data["status"]
@@ -23,6 +25,7 @@ class ValidationState(UserState):
             self.guidelines = response3.data
         except Exception as e:
             print("Exception in load_caseData:", e)
+            traceback.print_exc() 
     @rx.event
     def no_op(self):
         # needed to suppress _call_script no callback error
@@ -35,6 +38,7 @@ class ValidationState(UserState):
 
 def guideline_status(guideline: str) -> rx.Component:
     return rx.cond(ValidationState.violations.contains(guideline), status_tag("rejected"), status_tag("approved")) 
+
 
 def compliance_card() -> rx.Component:
     return rx.container(
@@ -61,7 +65,7 @@ def compliance_card() -> rx.Component:
                             text_align="center"
                         ),
                         rx.box(
-                            rx.text(f"{ValidationState.guidelines.length() - ValidationState.violations.length() }",
+                            rx.text(ValidationState.guidelines.length() - ValidationState.violations.length(),
                                     font_weight="bold",
                                     style={"fontSize": "2rem"},
                                     color="blue"),
@@ -129,5 +133,5 @@ def compliance_card() -> rx.Component:
                 margin_top="10px",
                 on_click=rx.call_script("downloadPDF()", callback=ValidationState.no_op)
             ),
-        on_mount=ValidationState.load_report
+            on_mount=ValidationState.load_report
         )

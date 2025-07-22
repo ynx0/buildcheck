@@ -1,9 +1,10 @@
 import reflex as rx
 from buildcheck.state.user_state import UserState
 from buildcheck.backend.supabase_client import supabase_client
+import traceback
 
 # State class to manage the case's progress for the current user
-class CaseState(UserState):
+class CaseState(rx.State):
     case_id: int = 0  # ID of the case, 0 if not loaded
     status: str = ""  # Status of the case (e.g., "pending")
     reviewer_id: int = 0  # ID of the reviewer, 0 if unassigned
@@ -21,10 +22,11 @@ class CaseState(UserState):
             return 3  # Review Completed
 
     @rx.event
-    def load_caseData(self):
+    async def load_caseData(self):
         # Loads the case data for the current user from the database
         try:
-            user_id_int = int(str(self.user_id))
+            user_state = await self.get_state(UserState)
+            user_id_int = int(str(user_state.user_id))
             response = (
                 supabase_client.table("cases")
                 .select("*")
@@ -37,6 +39,7 @@ class CaseState(UserState):
             self.reviewer_id = response.data["reviewer_id"]
         except Exception as e:
             print("Exception in load_caseData:", e)
+            traceback.print_exc() 
 
 # Determines the status string for a given step in the progress tracker
 def get_status(step_number: int, current_step: int, is_last: bool) -> str:
@@ -107,10 +110,10 @@ def progress_circle(
     current_step: int,
     is_last: bool = False
 ) -> rx.Component:
-    status = get_status(step_number, current_step, is_last)  # Determine the status for this step
-    circle_style = get_circle_style(status)  # Get the style for the circle
-    line_color = get_line_color(status)      # Get the color for the connecting line
-    label_color = get_label_color(status)    # Get the color for the label
+    status = get_status(step_number, current_step, is_last)  
+    circle_style = get_circle_style(status)  
+    line_color = get_line_color(status)     
+    label_color = get_label_color(status)  
 
     return rx.hstack(
         rx.vstack(

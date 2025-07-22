@@ -5,8 +5,9 @@ from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
 from buildcheck.state.user_state import UserState
 from buildcheck.backend.supabase_client import supabase_client
+import traceback
 
-class AIValidationState(UserState):
+class AIValidationState(rx.State):
     violations: list[str] = []
     guidelines: list[dict] = []
     case_data: list[dict] = []
@@ -16,10 +17,11 @@ class AIValidationState(UserState):
     comments: dict = {}
 
     @rx.event
-    def load_data(self):
+    async def load_data(self):
         # Loads the case data for the current user from the database
         try:
-            user_id_int = int(self.user_id)
+            user_state = await self.get_state(UserState)
+            user_id_int = int(user_state.user_id)
             response1 = supabase_client.table("cases").select("*").eq("reviewer_id", user_id_int).execute()
             self.case_id = str(response1.data[0]["id"])
             self.case_data = response1.data
@@ -30,36 +32,40 @@ class AIValidationState(UserState):
             self.guidelines = response3.data
         except Exception as e:
             print("Exception in load_data:", e)
+            traceback.print_exc() 
 
     @rx.event
     def change_case(self, value: str):
         self.case_id = value
 
-    @rx.event
-    def handle_comments(self, form_data: dict):
-        # Store the comment locally
-        self.comments = form_data
-        # Update the comments column in the cases table for the selected case_id
-        try:
-            comment_text = form_data.get("comment", "")
-            supabase_client.table("cases").update({"comments": comment_text}).eq("id", self.case_id).execute()
-        except Exception as e:
-            print("Exception in handle_comments:", e)
+    # @rx.event
+    # def handle_comments(self, form_data: dict):
+    #     # Store the comment locally
+    #     self.comments = form_data
+    #     # Update the comments column in the cases table for the selected case_id
+    #     try:
+    #         comment_text = form_data.get("comment", "")
+    #         supabase_client.table("cases").update({"comments": comment_text}).eq("id", self.case_id).execute()
+    #     except Exception as e:
+    #         print("Exception in handle_comments:", e)
 
     @rx.event
     def no_op(self):
         pass
 
     @rx.var
-    def compliance_score(self) -> float:
+    def compliance_score(self) -> str:
         if len(self.guidelines) == 0:
-            return 0.0
-        return (len(self.guidelines)- len(self.violations)) / len(self.guidelines)
+            score =  0.0
+        else:
+            score = (len(self.guidelines)- len(self.violations)) / len(self.guidelines) 
+        return f"{score * 100:.0f}%"
     
 
 def guideline_status(guideline: str) -> rx.Component:
     return rx.cond(AIValidationState.violations.contains(guideline), status_tag("rejected"), status_tag("approved")) 
     
+@rx.page('/validation', on_load=AIValidationState.load_data)
 def validation_page() -> rx.Component:
     return rx.vstack(
             navbar(),
@@ -88,9 +94,9 @@ def validation_page() -> rx.Component:
             ),
             rx.heading("AI Compliance Overview", size="6"),
             rx.hstack(
-                stat_card("Overall Compliance", f"{AIValidationState.compliance_score * 100}%", "circle-check-big", "green", "Compliance across all building guidelines."),
-                stat_card("Critical Violations", f"{AIValidationState.violations.length()}", "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
-                stat_card("Pending Reviews", f"{AIValidationState.listOfCases.length()}", "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
+                stat_card("Overall Compliance", AIValidationState.compliance_score, "circle-check-big", "green", "Compliance across all building guidelines."),
+                stat_card("Critical Violations", AIValidationState.violations.length(), "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
+                stat_card("Pending Reviews", AIValidationState.listOfCases.length(), "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
             margin_bottom="2em",
             ),
             rx.heading("Detailed Compliance Report", size="5"),
@@ -146,13 +152,11 @@ def validation_page() -> rx.Component:
                         rx.button("Add", type="submit"),
                         width="100%",
                     ),
-                    on_submit=AIValidationState.handle_comments,
-                    reset_on_submit=True,
+                    reset_on_submit=True
                     ),
                 ),
             ),
             width="100%",
             spacing="6",
             padding_x=["1.5em", "1.5em", "3em"],
-            on_mount=AIValidationState.load_data
         ), footer()
