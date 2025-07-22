@@ -51,8 +51,8 @@ class EmployeeUploadState(rx.State):
             case_data = case_response.data or []
 
 
-            for case in case_data:
-                print(f"[DEBUG] Case: {case}")
+            # for case in case_data:
+            #     print(f"[DEBUG] Case: {case}")
             self.uploads = [
                 {
                     "id": c.get("id"),
