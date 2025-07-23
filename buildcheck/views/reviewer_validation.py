@@ -22,7 +22,7 @@ class AIValidationState(rx.State):
         try:
             user_state = await self.get_state(UserState)
             response1 = supabase_client.table("cases").select("*").eq("reviewer_id", user_state.user_id).execute()
-            if len(response1.data) != 0:
+            if response1.data:
                 self.case_id = str(response1.data[0]["id"])
                 self.case_data = response1.data
                 self.listOfCases = [str(case["id"]) for case in self.case_data]
@@ -126,15 +126,15 @@ def validation_page() -> rx.Component:
                         ),
                         rx.table.body(
                             rx.foreach(
-                            AIValidationState.guidelines,
-                            lambda item: rx.table.row(
-                                rx.table.cell(item["code"]),
-                                rx.table.cell(item["title"]),
-                                rx.table.cell(item["description"]),
-                                rx.table.cell(guideline_status(item["code"])),
-                                rx.table.cell(item["category"]),
-                                rx.table.cell(rx.button("Delete", color_scheme="red"))
-                            )
+                                AIValidationState.guidelines,
+                                lambda item: rx.table.row(
+                                    rx.table.cell(item["code"]),
+                                    rx.table.cell(item["title"]),
+                                    rx.table.cell(item["description"]),
+                                    rx.table.cell(guideline_status(item["code"])),
+                                    rx.table.cell(item["category"]),
+                                    rx.table.cell(rx.button("Delete", color_scheme="red"))
+                                )
                             )
                         ),
                     ),
