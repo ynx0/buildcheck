@@ -1,4 +1,4 @@
-# buildcheck
+# ARCH
 
 ## Motivation
 
