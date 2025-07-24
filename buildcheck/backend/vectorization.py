@@ -30,7 +30,7 @@ class Edge:
     def __str__(self):
         return f"Edge(a=({self.a.x}, {self.a.y}), b=({self.b.x}, {self.b.y}))"
     
-
+# bounding box for a symbol
 @dataclass
 class BBox:
     a: Point  
