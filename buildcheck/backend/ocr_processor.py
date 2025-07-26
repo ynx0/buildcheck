@@ -3,7 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 from vectorization import *
 import re
-import shapely.geometry as geom
+import shapely.geometry as geom 
 
 class OCRProcessor:
     def __init__(self, image_path: str, layout: Layout):
@@ -60,69 +60,83 @@ class OCRProcessor:
         results = self.reader.readtext(image)
         for bbox, text, _ in results:
             # To calculate the center I used the point class from shapely.geometry
-            center_x = sum(point[0] for point in bbox) / 4
-            center_y = sum(point[1] for point in bbox) / 4
+            center_x = sum(point[0] for point in bbox) / len(bbox)
+            center_y = sum(point[1] for point in bbox) / len(bbox)
             center = geom.Point(center_x, center_y)
-
             for room in self.layout.rooms:
                 # Create a polygon for each room
                 room_polygon = geom.Polygon([(p.x, p.y) for p in room.junctions])
+                print(room_polygon.contains(center))
                 if room_polygon.contains(center):
                     if self.isDimension(text):
                         width, height = self.parse_dimension_text(text)
-                        room.metadata.append(Dimension(width, height))
+                        room.dimension = Dimension(width, height)
                     else:
-                        room.metadata.append(Label(text))
-                    break
+                        room.label = Label(text)
+                    
 
 def create_test_layout():
-    """Create a layout with manually defined room boundaries based on the floor plan"""
+    r2g =     {
+    "Bedroom": [
+        [314, 103],
+        [394, 103],
+        [394, 135],
+        [527, 135],
+        [527, 185],
+        [600, 185],
+        [600, 210],
+        [527, 210],
+        [527, 390],
+        [500, 390],
+        [500, 420],
+        [470, 420],
+        [470, 390],
+        [314, 390],
+        [314, 103]
+    ],
+    "Living_Room": [
+        [600, 210],
+        [847, 210],
+        [847, 578],
+        [703, 578],
+        [703, 600],
+        [600, 600],
+        [600, 210]
+    ],
+    "Dining_Room": [
+        [527, 390],
+        [600, 390],
+        [600, 600],
+        [527, 600],
+        [527, 520],
+        [510, 520],
+        [510, 390],
+        [527, 390]
+    ],
+    "Kitchen": [
+        [703, 578],
+        [847, 578],
+        [847, 785],
+        [703, 785],
+        [703, 600],
+        [600, 600],
+        [600, 785],
+        [703, 785],
+        [703, 578]
+    ],
     
-    # Room coordinates estimated from the floor plan image
-    # Bedroom (top-left)
-    bedroom_points = [
-        Point(50, 50),   # top-left
-        Point(380, 50),  # top-right  
-        Point(380, 300), # bottom-right
-        Point(50, 300)   # bottom-left
-    ]
-    bedroom = Room(bedroom_points)
     
-    # Living Room (top-right)
-    living_room_points = [
-        Point(380, 50),   # top-left
-        Point(650, 50),   # top-right
-        Point(650, 350),  # bottom-right
-        Point(380, 350)   # bottom-left
-    ]
-    living_room = Room(living_room_points)
-    
-    # Dining Room (center-left)
-    dining_room_points = [
-        Point(380, 300),  # top-left
-        Point(550, 300),  # top-right
-        Point(550, 450),  # bottom-right
-        Point(380, 450)   # bottom-left
-    ]
-    dining_room = Room(dining_room_points)
-    
-    # Kitchen (bottom-right)
-    kitchen_points = [
-        Point(550, 350),  # top-left
-        Point(750, 350),  # top-right
-        Point(750, 550),  # bottom-right
-        Point(550, 550)   # bottom-left
-    ]
-    kitchen = Room(kitchen_points)
-    
-    # Create layout and add rooms
+
+    }
+        
     layout = Layout()
-    layout.add_room(bedroom)
-    layout.add_room(living_room)
-    layout.add_room(dining_room) 
-    layout.add_room(kitchen)
-    
+    for room_name, points in r2g.items():
+            junctions = [Point(x, y) for x, y in points]
+            edges = [Edge(junctions[i], junctions[i + 1]) for i in range(len(junctions) - 1)]
+            room = Room(junctions=junctions, edges=edges)
+            layout.add_room(room)
     return layout
+
 
 def test_ocr_processor(image_path: str):
     """Test function to run OCR on the floor plan"""
@@ -143,7 +157,7 @@ def test_ocr_processor(image_path: str):
     
     
     for room in layout.rooms:
-        print(f"\n{room.metadata}:")
+        print(f"\n{room}")
             
 
 # Usage example:

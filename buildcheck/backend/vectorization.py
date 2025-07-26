@@ -67,12 +67,14 @@ class Room:
         self,
         junctions: list[Point],  
         symbols: list[Symbol] = [],
-        metadata: list[Metadata] = [],
+        label: Label = None,
+        dimension: Dimension = None,
         edges: list[Edge] = []
     ):
         self.junctions = junctions
         self.symbols = symbols
-        self.metadata = metadata
+        self.label = label
+        self.dimension = dimension
         self.edges = edges
 
     @classmethod
@@ -84,7 +86,7 @@ class Room:
     def __str__(self):
         return (
             f"Room(junctions={self.junctions}, "
-            f"symbols={self.symbols}, metadata={self.metadata})"
+            f"symbols={self.symbols}, label={self.label}, dimensions={self.dimensions})"
         )
 
 class Layout:
