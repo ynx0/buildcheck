@@ -30,11 +30,6 @@ class Guideline:
 
 
 
-# origin is top left corner because we are using image coords
-
-# TODO maybe we have to assume a real world scale to enforce rules about dimensions
-
-
 
 
 @dataclass
@@ -45,6 +40,26 @@ class Failure:
 
 Verdict = list[Failure]  # empty list denotes no failures
 Rule = Callable[Layout, Verdict]
+
+
+
+def validate(layout: Layout, rules: list[Rule]) -> list[Failure]:
+	all_failures = []
+
+	# run each rule on the layout
+	# collect the failures then return them
+
+	for rule in rules:
+		failures = rule(layout)
+		all_failures += failures
+
+	return all_failures
+
+
+#
+# MARK - Rules
+#
+
 
 
 
@@ -72,23 +87,6 @@ def rule_every_room_door(layout: Layout) -> Verdict:
 
 
 
-
-
-
-def validate(layout: Layout, rules: list[Rule]) -> list[Failure]:
-	all_failures = []
-
-	# run each rule on the layout
-	# collect the failures then return them
-
-	for rule in rules:
-		failures = rule(layout)
-		all_failures += failures
-
-	return all_failures
-
-
-
 ajyal_guidelines: list[Rule] = [
 	rule_every_room_door,
 	rule_at_least_one_room,
@@ -103,6 +101,9 @@ def validate_ajyal(layout: Layout) -> list[Failure]:
 
 
 
+# origin is top left corner because we are using image coords
+
+# TODO maybe we have to assume a real world scale to enforce rules about dimensions
 
 
 
