@@ -35,7 +35,7 @@ class OCRProcessor:
         if inches_match:
             inches = int(inches_match.group(1))
 
-        return feet + inches / 12.0
+        return round(feet + inches / 12.0, 2)
     
     @staticmethod
     def parse_dimension_text(text: str) -> tuple[float, float]:
