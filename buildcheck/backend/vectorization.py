@@ -17,14 +17,14 @@ class Category(Enum):
     # Extend as needed
 
 
-@dataclass
-class Point(frozen=True):
+@dataclass(frozen=True)
+class Point():
     x: float
     y: float
 
 
-@dataclass
-class Edge(frozen=True):
+@dataclass(frozen=True)
+class Edge:
     a: Point
     b: Point
 
@@ -39,8 +39,8 @@ class BBox:
         return [self.a, self.b, self.c, self.d]
     
 # Represents a floor plan symbol such as a window, door, etc. 
-@dataclass
-class Symbol(frozen=True):
+@dataclass(frozen=True)
+class Symbol:
     category: Category
     bbox: BBox
 
@@ -52,8 +52,8 @@ class Label:
 
 
 #A class that represents the width and height of a room recovered from the OCR process
-@dataclass
-class Dimension(frozen=True):
+@dataclass(frozen=True)
+class Dimension:
     width: float
     height: float
 

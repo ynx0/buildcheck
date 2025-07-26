@@ -19,8 +19,8 @@ class GuidelineCategory(Enum):
 	ZONING = "zoning"
 
 
-@dataclass
-class Guideline(frozen=True):
+@dataclass(frozen=True)
+class Guideline:
 	gid: Guidelines
 	title: str
 	description: str
