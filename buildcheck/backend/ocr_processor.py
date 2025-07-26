@@ -13,9 +13,13 @@ class OCRProcessor:
 
     @staticmethod
     def isDimension(text: str) -> bool:
-        # Returns True if the input text represents a dimension, e.g., '3x4', '2.5 x 3.75', '4 × 5'.
-        pattern = r'^\s*\d+(\.\d+)?\s*[x×X]\s*\d+(\.\d+)?\s*$'
-        return bool(re.match(pattern, text))
+        #pattern handles feet/inches notation like 12'6" x 11'8"
+        patterns = [
+            r'^\s*\d+(\.\d+)?\s*[x×X]\s*\d+(\.\d+)?\s*$',  # Simple: 12x14
+            r'^\s*\d+\'?\d*"?\s*[x×X]\s*\d+\'?\d*"?\s*$',  # Feet/inches: 12'6" x 11'8"
+            r'^\s*\d+\'\s*\d*"?\s*[x×X]\s*\d+\'\s*\d*"?\s*$'  # With spaces: 12' 6" x 11' 8"
+        ]
+        return any(bool(re.match(pattern, text)) for pattern in patterns)
     
     @staticmethod
     def parse_feet_inches(value: str) -> float:
@@ -49,9 +53,9 @@ class OCRProcessor:
     
     # This function extracts text with bounding boxes from the image 
     # and fill room objects with their labels and dimensions 
-    def ocrProcess(self, image_path: str) :
+    def ocrProcess(self) :
         # Extract text with bounding boxes from image
-        image = cv2.imread(image_path)
+        image = cv2.imread(self.image_path)
         # Perform OCR
         results = self.reader.readtext(image)
         for bbox, text, _ in results:
@@ -62,7 +66,7 @@ class OCRProcessor:
 
             for room in self.layout.rooms:
                 # Create a polygon for each room
-                room_polygon = geom.Polygon(room.junctions)
+                room_polygon = geom.Polygon([(p.x, p.y) for p in room.junctions])
                 if room_polygon.contains(center):
                     if self.isDimension(text):
                         width, height = self.parse_dimension_text(text)
@@ -70,6 +74,83 @@ class OCRProcessor:
                     else:
                         room.metadata.append(Label(text))
                     break
+
+def create_test_layout():
+    """Create a layout with manually defined room boundaries based on the floor plan"""
+    
+    # Room coordinates estimated from the floor plan image
+    # Bedroom (top-left)
+    bedroom_points = [
+        Point(50, 50),   # top-left
+        Point(380, 50),  # top-right  
+        Point(380, 300), # bottom-right
+        Point(50, 300)   # bottom-left
+    ]
+    bedroom = Room(bedroom_points)
+    
+    # Living Room (top-right)
+    living_room_points = [
+        Point(380, 50),   # top-left
+        Point(650, 50),   # top-right
+        Point(650, 350),  # bottom-right
+        Point(380, 350)   # bottom-left
+    ]
+    living_room = Room(living_room_points)
+    
+    # Dining Room (center-left)
+    dining_room_points = [
+        Point(380, 300),  # top-left
+        Point(550, 300),  # top-right
+        Point(550, 450),  # bottom-right
+        Point(380, 450)   # bottom-left
+    ]
+    dining_room = Room(dining_room_points)
+    
+    # Kitchen (bottom-right)
+    kitchen_points = [
+        Point(550, 350),  # top-left
+        Point(750, 350),  # top-right
+        Point(750, 550),  # bottom-right
+        Point(550, 550)   # bottom-left
+    ]
+    kitchen = Room(kitchen_points)
+    
+    # Create layout and add rooms
+    layout = Layout()
+    layout.add_room(bedroom)
+    layout.add_room(living_room)
+    layout.add_room(dining_room) 
+    layout.add_room(kitchen)
+    
+    return layout
+
+def test_ocr_processor(image_path: str):
+    """Test function to run OCR on the floor plan"""
+    
+    # Create layout with manual room boundaries
+    layout = create_test_layout()
+    
+    # Create OCR processor
+    processor = OCRProcessor(image_path, layout)
+    
+    # Process the image
+    processor.ocrProcess()
+    
+    # Print results
+    print("\n" + "="*50)
+    print("FINAL RESULTS:")
+    print("="*50)
+    
+    
+    for room in layout.rooms:
+        print(f"\n{room.metadata}:")
+            
+
+# Usage example:
+if __name__ == "__main__":
+    # Replace with your actual image path
+    image_path = "assets/blueprint.jpg"
+    test_ocr_processor(image_path)
 
 
 
