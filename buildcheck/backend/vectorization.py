@@ -91,7 +91,6 @@ class Layout:
         file_name: str = None,
     ):
         self.rooms = rooms
-        self.metadata = metadata
         self.file_name = file_name
 
     def add_room(self, room: Room):
