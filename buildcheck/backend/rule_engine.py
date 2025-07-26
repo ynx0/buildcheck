@@ -2,7 +2,8 @@ from .vectorization import *
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from enum import Enum
-
+from typing import Optional, Callable
+from copy import deepcopy
 
 
 # This MUST be kept up to date with the `guidelines` table at all times
@@ -57,7 +58,7 @@ def rule_every_room_door(layout: Layout) -> Verdict:
 	failures = []
 
 	def has_door(room):
-		return any(sym.category == Category.DOOR for room.symbols)
+		return any(sym.category == Category.DOOR for sym in room.symbols)
 
 	for room in layout.room:
 		if not has_door(room):
@@ -90,7 +91,7 @@ ajyal_guidelines: list[Rule] = [
 ]
 
 
-def validate_ajyal(layout: Layout) -> list[Failures]:
+def validate_ajyal(layout: Layout) -> list[Failure]:
 	return validate(layout, ajyal_guidelines)
 
 
@@ -104,9 +105,15 @@ def validate_ajyal(layout: Layout) -> list[Failures]:
 
 if __name__ == '__main__':
 
-	def makepts(pts: list[list(int)]):
+
+	from pprint import pprint
+
+
+	def makepts(pts: list[list[int]]):
 		return [Point(*p) for p in pts]
 
+
+	# create basic room
 	room_basic_nodoor = Room(
 		junctions = [
 			Point(0, 0),  # top left
@@ -119,10 +126,12 @@ if __name__ == '__main__':
 
 	door_within_bounds = Symbol(Category.DOOR, BBox(*makepts([[1,1], [1,2], [2,1], [2,2]])))
 
-	room_basic_door = room_basic_nodoor.replace(symbols=[door])
+	# create room with door by cloning and adding a symbol
+	room_basic_door = deepcopy(room_basic_nodoor)
+	room_basic_door.symbols = [door_within_bounds]
 
 
-
+	# create layouts
 	layout_empty = Layout(
 		rooms=[],
 		file_name="empty.png"
@@ -143,9 +152,16 @@ if __name__ == '__main__':
 	val_bad = validate_ajyal(layout_bad)
 	val_good = validate_ajyal(layout_good)
 
-	print("Validation Results")
-	print(f'{val_empty=}')
 
+	print("Validation Results")
+	print("empty::")
+	pprint(val_empty)
+
+	print("bad::")
+	pprint(val_bad)
+
+	print("good::")
+	pprint(val_good)
 
 
 
