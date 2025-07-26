@@ -51,6 +51,8 @@ Rule = Callable[Layout, Verdict]
 def rule_at_least_one_room(layout: Layout) -> Verdict:
 	if not len(layout.rooms) > 0:
 		return [Failure(Guidelines.LAYOUT_HAS_ROOM)]
+	else:
+		return []
 
 
 def rule_every_room_door(layout: Layout) -> Verdict:
@@ -60,11 +62,13 @@ def rule_every_room_door(layout: Layout) -> Verdict:
 	def has_door(room):
 		return any(sym.category == Category.DOOR for sym in room.symbols)
 
-	for room in layout.room:
+	for room in layout.rooms:
 		if not has_door(room):
 			# for the location, we just pick a random junction for now
 			# later when we have shapely, we can compute the centroid of the polygon
 			failures.append(Failure(Guidelines.ROOMS_HAVE_DOOR, location=room.junctions[0]))
+
+	return failures
 
 
 
@@ -144,7 +148,7 @@ if __name__ == '__main__':
 
 
 	layout_good = Layout(
-		rooms=[room_basic_nodoor],
+		rooms=[room_basic_door],
 		file_name='bad.png'
 	)
 
