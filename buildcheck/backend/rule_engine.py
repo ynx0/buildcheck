@@ -88,8 +88,8 @@ def rule_every_room_door(layout: Layout) -> Verdict:
 
 
 ajyal_guidelines: list[Rule] = [
-	rule_every_room_door,
 	rule_at_least_one_room,
+	rule_every_room_door,
 ]
 
 
@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
 	layout_good = Layout(
 		rooms=[room_basic_door],
-		file_name='bad.png'
+		file_name='good.png'
 	)
 
 	val_empty = validate_ajyal(layout_empty)
