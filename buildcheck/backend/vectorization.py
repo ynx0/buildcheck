@@ -16,7 +16,6 @@ class Category(Enum):
     TUB = auto()
     COLUMN = auto()
     RAILING = auto()
-    # Extend as needed
 
 
 @dataclass
@@ -32,7 +31,7 @@ class Edge:
     def __str__(self):
         return f"Edge(a=({self.a.x}, {self.a.y}), b=({self.b.x}, {self.b.y}))"
     
-# bounding box for a symbol
+
 @dataclass
 class BBox:
     a: Point  
@@ -103,4 +102,3 @@ class Layout:
     def add_room(self, room: Room):
         self.rooms.append(room)
     
-

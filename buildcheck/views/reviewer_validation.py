@@ -3,51 +3,78 @@ from buildcheck.components.stat_card import stat_card
 from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
+from buildcheck.state.user_state import UserState
 from buildcheck.backend.supabase_client import supabase_client
+import traceback
 
-
-class GuidelineState(rx.State):
-    guideline: list[str]  # Explicitly type as list of list of strings
-    # I know that we should'nt use this table, but I'm only using it to get guidelines examples
-    # When we finalize the DB schema, I will replace this with the correct table
-    response = supabase_client.table("guidelines").select("*").execute()
-    guideline = [
-        [item.get("code"), item.get("title"), item.get("description"),item.get("category")]
-        for item in response.data
-    ]
-class SelectState(rx.State):
-    value: str = "444"
+class AIValidationState(rx.State):
+    violations: list[str] = []
+    guidelines: list[dict] = []
+    case_data: list[dict] = []
+    case_result: str = "No cases assigned"  # Default case result status
+    case_id: str = ""
+    listOfCases: list[str] = []
+    comments: dict = {}
 
     @rx.event
-    def change_bluePrint(self, value: str):
-        self.value = value
-
-def show_guideline(guideline: list):
-    # Trigger guideline loading if needed (handled by State in Reflex)
-    return rx.table.row(
-        rx.table.cell(guideline[0]),
-        rx.table.cell(guideline[1]),
-        rx.table.cell(guideline[2]),
-        rx.table.cell(status_tag("approved")),  # Assuming status is always "approved" for this example
-        rx.table.cell(guideline[3]),
-        rx.table.cell(rx.button("Delete", color_scheme="red")),
-    )
-class FormInputState(rx.State):
-    form_data: dict = {}
+    async def load_data(self):
+        # Loads the case data for the current user from the database
+        try:
+            user_state = await self.get_state(UserState)
+            response1 = supabase_client.table("cases").select("*").eq("reviewer_id", user_state.user_id).execute()
+            if response1.data:
+                self.case_id = str(response1.data[0]["id"])
+                self.case_data = response1.data
+                self.listOfCases = [str(case["id"]) for case in self.case_data]
+                response2 = supabase_client.table("violations").select("guideline_code").eq("case_id", self.case_id).execute()
+                self.violations = [row["guideline_code"] for row in response2.data]
+                response3 = supabase_client.table("guidelines").select("*").execute() 
+                self.guidelines = response3.data
+        except Exception as e:
+            print("Exception in load_data:", e)
+            traceback.print_exc() 
 
     @rx.event
-    def handle_submit(self, form_data: dict):
-        self.form_data = form_data
+    def change_case(self, value: str):
+        self.case_id = value
 
+    # @rx.event
+    # def handle_comments(self, form_data: dict):
+    #     # Store the comment locally
+    #     self.comments = form_data
+    #     # Update the comments column in the cases table for the selected case_id
+    #     try:
+    #         comment_text = form_data.get("comment", "")
+    #         supabase_client.table("cases").update({"comments": comment_text}).eq("id", self.case_id).execute()
+    #     except Exception as e:
+    #         print("Exception in handle_comments:", e)
+
+    @rx.event
+    def no_op(self):
+        pass
+
+    @rx.var
+    def compliance_score(self) -> str:
+        if len(self.guidelines) == 0:
+            score =  0.0
+        else:
+            score = (len(self.guidelines)- len(self.violations)) / len(self.guidelines) 
+        return f"{score * 100:.0f}%"
+    
+
+def guideline_status(guideline: str) -> rx.Component:
+    return rx.cond(AIValidationState.violations.contains(guideline), status_tag("rejected"), status_tag("approved")) 
+    
+@rx.page('/validation', on_load=AIValidationState.load_data)
 def validation_page() -> rx.Component:
     return rx.vstack(
             navbar(),
             rx.hstack(
                 rx.text("Blueprint ID:", font_weight="bold"),
                 rx.select(
-                    ["444", "555", "343"],
-                    value=SelectState.value,
-                    on_change=SelectState.change_bluePrint,
+                    AIValidationState.listOfCases,
+                    value=AIValidationState.case_id,
+                    on_change=AIValidationState.change_case,
                     width="200px"
                 ),
                 rx.button(
@@ -67,10 +94,9 @@ def validation_page() -> rx.Component:
             ),
             rx.heading("AI Compliance Overview", size="6"),
             rx.hstack(
-                stat_card("Overall Compliance", "92%", "circle-check-big", "green", "Compliance across all building guidelines."),
-                stat_card("Critical Violations", "3", "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
-                stat_card("Minor Warnings", "12", "triangle-alert", "#ffde59", "Potential issues or areas for improvement."),
-                stat_card("Pending Reviews", "5", "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
+                stat_card("Overall Compliance", AIValidationState.compliance_score, "circle-check-big", "green", "Compliance across all building guidelines."),
+                stat_card("Critical Violations", AIValidationState.violations.length(), "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
+                stat_card("Pending Reviews", AIValidationState.listOfCases.length(), "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
             margin_bottom="2em",
             ),
             rx.heading("Detailed Compliance Report", size="5"),
@@ -96,11 +122,19 @@ def validation_page() -> rx.Component:
                                 rx.table.column_header_cell("Status"),
                                 rx.table.column_header_cell("Category"),
                                 rx.table.column_header_cell("Actions"),
-                            )
+                            ) 
                         ),
                         rx.table.body(
                             rx.foreach(
-                                GuidelineState.guideline, show_guideline
+                                AIValidationState.guidelines,
+                                lambda item: rx.table.row(
+                                    rx.table.cell(item["code"]),
+                                    rx.table.cell(item["title"]),
+                                    rx.table.cell(item["description"]),
+                                    rx.table.cell(guideline_status(item["code"])),
+                                    rx.table.cell(item["category"]),
+                                    rx.table.cell(rx.button("Delete", color_scheme="red"))
+                                )
                             )
                         ),
                     ),
@@ -118,8 +152,7 @@ def validation_page() -> rx.Component:
                         rx.button("Add", type="submit"),
                         width="100%",
                     ),
-                    on_submit=FormInputState.handle_submit,
-                    reset_on_submit=True,
+                    reset_on_submit=True
                     ),
                 ),
             ),
