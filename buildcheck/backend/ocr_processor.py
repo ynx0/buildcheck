@@ -70,9 +70,9 @@ class OCRProcessor:
                 if room_polygon.contains(center):
                     if self.isDimension(text):
                         width, height = self.parse_dimension_text(text)
-                        room.dimension = Dimension(width, height)
+                        room.metadata.append(Dimension(width, height))
                     else:
-                        room.label = Label(text)
+                        room.metadata.append(Label(text))
                     
 
 def create_test_layout():

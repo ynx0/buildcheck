@@ -2,78 +2,166 @@ from ultralytics import YOLO
 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from vectorization import *
+import shapely.geometry as geom
 
-# 1. Load the YOLOv8 model
-# Replace "path/to/your/trained_model.pt" with the actual path to your .pt model file.
-# For example, if your model is named 'best.pt' and is in the same directory as this script, use 'best.pt'.
-try:
-    model = YOLO("buildcheck/backend/best.pt")
-    print("YOLOv8 model loaded successfully.")
-except Exception as e:
-    print(f"Error loading model: {e}")
-    print("Please ensure the model path is correct and the .pt file exists.")
-    print("If you don't have a trained model, you might need to train one first using the provided repository's instructions.")
-    exit()
+class YOLOProcessor:
+    def __init__(self, image_path: str, model_path: str, layout: Layout):
+        self.image_path = image_path
+        self.layout = layout
+        self.model = YOLO(model_path)
+        
+    @staticmethod
+    def map_class_to_category(class_name: str) -> Category:
+        # Map YOLO detected class names to vectorization class Category enum        
+        class_mapping = {
+            'column': Category.COLUMN,
+            'curtain Wall': Category.WALL,
+            'door': Category.DOOR,
+            'railing': Category.RAILING,
+            'sliding door': Category.DOOR,
+            'stair case': Category.STAIRS,
+            'wall': Category.WALL,
+            'window': Category.WINDOW,
+        }
+        # Return mapped category or default to WALL if not found
+        return class_mapping.get(class_name, Category.WALL)
+    
+    def calculate_bbox_center(self, bbox: list) -> geom.Point:
+        x1, y1, x2, y2 = bbox
+        center_x = (x1 + x2) / 2
+        center_y = (y1 + y2) / 2
+        return geom.Point(center_x, center_y)
+    
+    def create_symbol_from_detection(self, class_name: str, bbox: list) -> Symbol:
+        x1, y1, x2, y2 = bbox
+        
+        # Create BBox object with four corner points
+        bbox_obj = BBox(
+            a=Point(x1, y1),  # Top-left
+            b=Point(x2, y1),  # Top-right
+            c=Point(x2, y2),  # Bottom-right
+            d=Point(x1, y2)   # Bottom-left
+        )
+        
+        # Map class name to category
+        category = self.map_class_to_category(class_name)
+        
+        # Create symbol
+        symbol = Symbol(category, bbox_obj)
+        
+        return symbol
+    
+    def find_room_for_symbol(self, center_point: geom.Point) -> Room:
+        for room in self.layout.rooms:
+            # Create a polygon for each room
+            room_polygon = geom.Polygon([(p.x, p.y) for p in room.junctions])
+            
+            if room_polygon.contains(center_point):
+                return room
+        
+        return None
+    
+    def yoloProcesser(self, confidence_threshold: float = 0.25):
+        # Run YOLO detection and associate symbols with rooms
+        
+        # Run YOLO inference
+        results = self.model.predict(
+            source=self.image_path, 
+            conf=confidence_threshold,
+            save=False,  # Don't save automatically
+            verbose=False
+        )
+        
+        total_detections = 0
+        symbols_assigned = 0
+        
+        # Process each result
+        for result in results:
+            # Get detection data
+            if result.boxes is None or len(result.boxes) == 0:
+                print("No objects detected.")
+                continue
+                
+            boxes = result.boxes.xyxy.cpu().numpy()  # [x1, y1, x2, y2]
+            classes = result.boxes.cls.cpu().numpy()  # Class IDs
+            names = result.names  # Class ID to name mapping
+            confs = result.boxes.conf.cpu().numpy()  # Confidence scores
+                        
+            for i in range(len(boxes)):
+                x1, y1, x2, y2 = map(int, boxes[i])
+                class_id = int(classes[i])
+                confidence = float(confs[i])
+                class_name = names[class_id]
+                
+                total_detections += 1
+                
+                # Create symbol from detection
+                symbol = self.create_symbol_from_detection(
+                    class_name, [x1, y1, x2, y2]
+                )
+                
+                # Calculate center point
+                center = self.calculate_bbox_center([x1, y1, x2, y2])
+                
+                # Find which room contains this symbol
+                containing_room = self.find_room_for_symbol(center)
+                                
+                if containing_room:
+                    # Add symbol to the room
+                    containing_room.symbols.append(symbol)
+                    symbols_assigned += 1
 
-# 2. Load a sample floor plan image
-image_path = "assets/blueprint.jpg" # Using the uploaded blueprint.jpg
-try:
-    # Ultralytics model.predict can directly handle image paths
-    print(f"Loading image: {image_path}")
-except Exception as e:
-    print(f"Error accessing image at {image_path}: {e}")
-    print("Please make sure 'blueprint.jpg' is in the same directory as this script or provide the full path.")
-    exit()
+        
+        print(f"\nDETECTION SUMMARY:")
+        print(f"Total detections: {total_detections}")
+        print(f"Symbols assigned to rooms: {symbols_assigned}")
+        print(f"Unassigned symbols: {total_detections - symbols_assigned}")
 
-# 3. Run inference to detect objects
-print("Running inference on the image...")
-results = model.predict(source=image_path, save=True, conf=0.25) # conf=0.25 is default, adjust as needed
+    
+    def print_room_summary(self):
+        """Print summary of symbols found in each room"""
+        print("\n" + "="*60)
+        print("ROOM-WISE SYMBOL SUMMARY")
+        print("="*60)
+        
+        for i, room in enumerate(self.layout.rooms):
+            print(f"\nRoom_{i+1}:")
+            
+            if room.symbols:
+                symbol_counts = {}
+                for symbol in room.symbols:
+                    category_name = symbol.category.name
+                    symbol_counts[category_name] = symbol_counts.get(category_name, 0) + 1
+                
+                for category, count in symbol_counts.items():
+                    print(f"{category}: {count}")
+            else:
+                print("No symbols detected")
 
-# 4. Visualize or print the results
-print("\n--- Detection Results ---")
-detected_objects = []
 
-# Process results list (model.predict returns a list of Results objects)
-for r_idx, result in enumerate(results):
-    # Get bounding boxes, classes, and confidence scores
-    boxes = result.boxes.xyxy.cpu().numpy()  # Bounding box coordinates (x1, y1, x2, y2)
-    classes = result.boxes.cls.cpu().numpy() # Class IDs
-    names = result.names                   # Dictionary mapping class IDs to names
-    confs = result.boxes.conf.cpu().numpy()  # Confidence scores
+def test_yolo_processor(image_path: str, model_path: str):
 
-    print(f"\nResults for image {r_idx + 1}:")
-    if len(boxes) == 0:
-        print("No objects detected.")
-    else:
-        for i in range(len(boxes)):
-            x1, y1, x2, y2 = map(int, boxes[i])
-            class_id = int(classes[i])
-            confidence = confs[i]
-            class_name = names[class_id]
+    # Import the test layout creation function from OCR processor
+    from ocr_processor import create_test_layout
+    
+    # Create test layout
+    layout = create_test_layout()
+    
+    # Create YOLO processor
+    processor = YOLOProcessor(image_path, model_path, layout)
+    
+    # Process with current threshold
+    processor.yoloProcesser(0.5)
+        
+    
+    processor.print_room_summary()
 
-            detected_objects.append({
-                "class": class_name,
-                "confidence": f"{confidence:.2f}",
-                "bbox": [x1, y1, x2, y2]
-            })
-            print(f"  Detected: {class_name} (Confidence: {confidence:.2f}) at BBox: [{x1}, {y1}, {x2}, {y2}]")
-
-    # Display results image if save=True in model.predict, it saves to runs/detect/predictX
-    # To display directly in a script:
-    im_bgr = result.plot()  # plot() method returns a BGR numpy array with detections drawn
-    im_rgb = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2RGB) # Convert BGR to RGB for matplotlib
-
-    plt.figure(figsize=(12, 8))
-    plt.imshow(im_rgb)
-    plt.title(f"Floor Plan Object Detection - Image {r_idx + 1}")
-    plt.axis('off')
-    plt.show()
-
-print("\n--- Summary of Detected Objects ---")
-if detected_objects:
-    for obj in detected_objects:
-        print(f"Class: {obj['class']}, Confidence: {obj['confidence']}, BBox: {obj['bbox']}")
-else:
-    print("No objects were detected in the floor plan.")
-
-print("\nDetection process complete. Annotated images are saved in 'runs/detect/predictX' directories.")
+# Usage example
+if __name__ == "__main__":
+    # Configuration
+    image_path = "assets/blueprint.jpg"
+    model_path = "buildcheck/backend/best.pt"  # Update this path as needed
+    
+    # Run test
+    test_yolo_processor(image_path, model_path)

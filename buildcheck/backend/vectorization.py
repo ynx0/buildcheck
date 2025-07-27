@@ -14,6 +14,8 @@ class Category(Enum):
     SINK = auto()
     SOFA = auto()
     TUB = auto()
+    COLUMN = auto()
+    RAILING = auto()
     # Extend as needed
 
 
@@ -66,15 +68,13 @@ class Room:
     def __init__(
         self,
         junctions: list[Point],  
-        symbols: list[Symbol] = [],
-        label: Label = None,
-        dimension: Dimension = None,
+        symbols: list[Symbol] = None,
+        metadata: list[Metadata] = None,
         edges: list[Edge] = []
     ):
         self.junctions = junctions
-        self.symbols = symbols
-        self.label = label
-        self.dimension = dimension
+        self.symbols = symbols if symbols is not None else []  # NEW LIST!
+        self.metadata = metadata if metadata is not None else []
         self.edges = edges
 
     @classmethod
@@ -86,7 +86,7 @@ class Room:
     def __str__(self):
         return (
             f"Room(junctions={self.junctions}, "
-            f"symbols={self.symbols}, label={self.label}, dimension={self.dimension})"
+            f"symbols={self.symbols}, metadata=({self.metadata})"
         )
 
 class Layout:
