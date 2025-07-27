@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
 	# create room with door by cloning and adding a symbol
 	room_basic_door = deepcopy(room_basic_nodoor)
-	room_basic_door.symbols = [door_within_bounds]
+	room_basic_door.symbols.append(door_within_bounds)
 
 
 	# create layouts
