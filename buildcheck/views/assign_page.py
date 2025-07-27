@@ -7,8 +7,16 @@ from buildcheck.state.user_state import UserState
 # This page to mange blueprint assignments and reviewer selection
 
 class AssignmentState(rx.State):
-    
-   
+
+    is_modal_open: bool = False
+    selected_reviewer: str = ""
+    selected_case_id: str = ""
+    current_reviewer_name: str = ""
+    reviewer_options: list[str] = []
+    search: str = ""
+    selected_status: str = "All Statuses"
+    assignments: list[dict] = []
+
     @rx.event
     def open_modal(self):
         self.is_modal_open = True
@@ -60,14 +68,7 @@ class AssignmentState(rx.State):
             filtered = [a for a in filtered if s in a["id"].lower() or s in a["employee"].lower()]
         return filtered
     
-    is_modal_open: bool = False
-    selected_reviewer: str = ""
-    selected_case_id: str = ""
-    current_reviewer_name: str = ""
-    reviewer_options: list[str] = []
-    search: str = ""
-    selected_status: str = "All Statuses"
-    assignments: list[dict] = []
+
 
     @rx.event
     def reset_filters(self): # Reset search and status filters to default.
@@ -109,6 +110,8 @@ class AssignmentState(rx.State):
         users = supabase_client.table("users").select("id, name").execute()
         user_map = {str(user["id"]): user["name"] for user in users.data}
 
+        uid = await self.get_var_value(UserState.user_id)
+
         self.assignments = [
             {
                 "id": f"BP{case['id']:03}",
@@ -117,7 +120,7 @@ class AssignmentState(rx.State):
                 "status": case["status"],
                 "reviewer": user_map.get(str(case["reviewer_id"]), "Not Assigned"),
                 # Example: add a flag if this assignment belongs to the current user
-                "is_current_user": str(case["submitter_id"]) == UserState.user_id,
+                "is_current_user": str(case["submitter_id"]) == uid,
             }
             for case in response.data
         ]
