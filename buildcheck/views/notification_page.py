@@ -18,12 +18,19 @@ class NotificationState(UserState):
     def role_heading(self) -> str:
         """Create a properly formatted heading based on user's role"""
         # Capitalize the role for heading (e.g., "Admin", "Reviewer")
-        return self.role.capitalize() if self.role else ""
-
-    @rx.var
-    def footer_component(self) -> rx.Component:
-        """Return the footer component for the page"""
-        return footer()
+        return self.role.capitalize() 
+    
+    @staticmethod
+    def format_timestamp(timestamp_str: str) -> str:
+        """Convert ISO timestamp string to readable format"""
+        try:
+            # Parse the timestamp string from database
+            dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+            # Return formatted date and time
+            return dt.strftime("%b %d, %Y at %I:%M %p")
+        except:
+            # Return original string if parsing fails
+            return timestamp_str
 
     @rx.var
     def has_notifications(self) -> bool:
@@ -50,7 +57,7 @@ class NotificationState(UserState):
 
 
 # 2. Notifications Page View - Main page component
-@rx.page(route="/notifications-page", title="Notifications")
+@rx.page(route="/notifications-page", title="Notifications", on_load=NotificationState.load_notifications)
 def notifications_page_view() -> rx.Component:
     """Create the complete notifications page layout"""
     return rx.fragment(
@@ -70,8 +77,5 @@ def notifications_page_view() -> rx.Component:
                 padding="2em",
             ),
         ),
-        # Footer at bottom of page
-        NotificationState.footer_component,
-        # Automatically load notifications when page loads
-        on_mount=NotificationState.load_notifications,
+        footer(),
     )

@@ -1,21 +1,7 @@
 import reflex as rx  # Reflex for building UI components
 
-# 1. Format timestamp strings for display 
-def format_timestamp(timestamp_str: str) -> str:
-    """Convert database timestamp string to readable format"""
-    try:
-        # Parse the timestamp string from database
-        from datetime import datetime
-        dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
-        # Return formatted date and time
-        return dt.strftime("%b %d, %Y at %I:%M %p")
-    except:
-        # Return original string if parsing fails
-        return timestamp_str
-
-
-# 2. Single Notification Card Component (larger size)
-def notification_card(title: str, message: str, timestamp: str) -> rx.Component:
+# 1. Single Notification Card Component (larger size)
+def notification_card(title: str, message: str, formatted_time: str) -> rx.Component:
     """Create individual notification card with title, message, and timestamp"""
     return rx.box(
         rx.hstack(
@@ -32,8 +18,8 @@ def notification_card(title: str, message: str, timestamp: str) -> rx.Component:
             rx.spacer(),
             # Right side: formatted timestamp
             rx.text(
-                format_timestamp(timestamp), 
-                size="2",  
+                formatted_time,
+                size="2",
                 color="gray"
             ),
             align_items="start",
@@ -49,24 +35,19 @@ def notification_card(title: str, message: str, timestamp: str) -> rx.Component:
     )
 
 
-# 3. Notifications Page Layout
+# 2. Notifications Page Layout
 def notifications_page(role: str, notifications: list[dict]) -> rx.Component:
     """Create the main notifications display area with header and notification list"""
     return rx.container(
         # Header with bell icon and role-specific title
         rx.hstack(
-            rx.heading(f"{role} Notifications", size="5"),
+        # WARNING: Using an f-string below means the heading is only set once, when this function is first run.
+        # Meaning, if 'role' changes later, the heading will may NOT update reactively.
+            rx.heading(f"{role} Notifications", size="5"), 
             spacing="3",
             margin_bottom="1em"
         ),
-
-        # Search input (UI only, non-functional)
-        rx.input(
-            placeholder="Search notifications...",
-            width="300px",
-            margin_bottom="1.5em"
-        ),
-
+        
         # Display each notification using the notification_card component
         rx.foreach(
             notifications, 
