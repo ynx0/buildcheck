@@ -121,10 +121,11 @@ if __name__ == '__main__':
 	# create basic room
 	room_basic_nodoor = Room(
 		junctions = [
+			# should be ccw order
 			Point(0, 0),  # top left
-			Point(5, 0),  # top right
 			Point(0, 5),  # bot left
 			Point(5, 5),  # bot right
+			Point(5, 0),  # top right
 		],
 		symbols = []  # no door
 	)

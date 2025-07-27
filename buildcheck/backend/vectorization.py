@@ -18,7 +18,7 @@ class Category(Enum):
 
 
 @dataclass(frozen=True)
-class Point():
+class Point:
     x: float
     y: float
 
