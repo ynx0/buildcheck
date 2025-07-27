@@ -49,29 +49,17 @@ class YOLOProcessor:
     
     def find_rooms_for_symbol(self, bbox: list, intersection_threshold: float = 0.05) -> list[Room]:
         x1, y1, x2, y2 = bbox
-        symbol_box = geom.box(x1, y1, x2, y2)
-        symbol_area = symbol_box.area
+        symbol_poly = geom.Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])
         
         room_matches = []
         
         for room in self.layout.rooms:
-            try:
-                # Calculate intersection
-                intersection = room.polygon.intersection(symbol_box)
-                
-                if intersection.is_empty:
-                    continue
-                
-                intersection_area = intersection.area
-                intersection_ratio = intersection_area / symbol_area if symbol_area > 0 else 0
-                
-                # Check if intersection meets threshold
-                if intersection_ratio >= intersection_threshold:
-                    room_matches.append(room)
-                    
-            except Exception as e:
-                print(f"Warning: Error calculating intersection for room: {e}")
-                continue
+            # Returns True if symbol and room overlap at all
+            intersects = room.polygon.intersects(symbol_poly)
+            # Check if intersection meets threshold
+            if intersects:
+                room_matches.append(room)
+
         
         return room_matches
     
