@@ -87,7 +87,6 @@ class YOLOProcessor:
             boxes = result.boxes.xyxy.cpu().numpy()  # [x1, y1, x2, y2]
             classes = result.boxes.cls.cpu().numpy()  # Class IDs
             names = result.names  # Class ID to name mapping
-            confs = result.boxes.conf.cpu().numpy()  # Confidence scores
                         
             for i in range(len(boxes)):
                 x1, y1, x2, y2 = map(int, boxes[i])
