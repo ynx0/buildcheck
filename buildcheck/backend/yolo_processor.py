@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from vectorization import *
+import shapely
 import shapely.geometry as geom
 
 class YOLOProcessor:
@@ -27,12 +28,6 @@ class YOLOProcessor:
         # Return mapped category or default to WALL if not found
         return class_mapping.get(class_name, Category.WALL)
     
-    def calculate_bbox_center(self, bbox: list) -> geom.Point:
-        x1, y1, x2, y2 = bbox
-        center_x = (x1 + x2) / 2
-        center_y = (y1 + y2) / 2
-        return geom.Point(center_x, center_y)
-    
     def create_symbol_from_detection(self, class_name: str, bbox: list) -> Symbol:
         x1, y1, x2, y2 = bbox
         
@@ -52,17 +47,35 @@ class YOLOProcessor:
         
         return symbol
     
-    def find_room_for_symbol(self, center_point: geom.Point) -> Room:
-        for room in self.layout.rooms:
-            # Create a polygon for each room
-            room_polygon = geom.Polygon([(p.x, p.y) for p in room.junctions])
-            
-            if room_polygon.contains(center_point):
-                return room
+    def find_rooms_for_symbol(self, bbox: list, intersection_threshold: float = 0.05) -> list[Room]:
+        x1, y1, x2, y2 = bbox
+        symbol_box = geom.box(x1, y1, x2, y2)
+        symbol_area = symbol_box.area
         
-        return None
+        room_matches = []
+        
+        for room in self.layout.rooms:
+            try:
+                # Calculate intersection
+                intersection = room.polygon.intersection(symbol_box)
+                
+                if intersection.is_empty:
+                    continue
+                
+                intersection_area = intersection.area
+                intersection_ratio = intersection_area / symbol_area if symbol_area > 0 else 0
+                
+                # Check if intersection meets threshold
+                if intersection_ratio >= intersection_threshold:
+                    room_matches.append(room)
+                    
+            except Exception as e:
+                print(f"Warning: Error calculating intersection for room: {e}")
+                continue
+        
+        return room_matches
     
-    def yoloProcesser(self, confidence_threshold: float = 0.25):
+    def yoloProcesser(self, confidence_threshold: float = 0.25, intersection_threshold: float = 0.05):
         # Run YOLO detection and associate symbols with rooms
         
         # Run YOLO inference
@@ -91,7 +104,6 @@ class YOLOProcessor:
             for i in range(len(boxes)):
                 x1, y1, x2, y2 = map(int, boxes[i])
                 class_id = int(classes[i])
-                confidence = float(confs[i])
                 class_name = names[class_id]
                 
                 total_detections += 1
@@ -101,17 +113,14 @@ class YOLOProcessor:
                     class_name, [x1, y1, x2, y2]
                 )
                 
-                # Calculate center point
-                center = self.calculate_bbox_center([x1, y1, x2, y2])
-                
-                # Find which room contains this symbol
-                containing_room = self.find_room_for_symbol(center)
+              # Find applicable rooms using intersection-based matching
+                applicable_rooms = self.find_rooms_for_symbol([x1, y1, x2, y2], intersection_threshold)
                                 
-                if containing_room:
-                    # Add symbol to the room
-                    containing_room.symbols.append(symbol)
+                if applicable_rooms:
                     symbols_assigned += 1
-
+                    
+                    for room in applicable_rooms:
+                        room.symbols.append(symbol)
         
         print(f"\nDETECTION SUMMARY:")
         print(f"Total detections: {total_detections}")

@@ -3,7 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 from vectorization import *
 import re
-import shapely.geometry as geom 
+import shapely  
 
 class OCRProcessor:
     def __init__(self, image_path: str, layout: Layout):
@@ -59,20 +59,26 @@ class OCRProcessor:
         # Perform OCR
         results = self.reader.readtext(image)
         for bbox, text, _ in results:
-            # To calculate the center I used the point class from shapely.geometry
-            center_x = sum(point[0] for point in bbox) / len(bbox)
-            center_y = sum(point[1] for point in bbox) / len(bbox)
-            center = geom.Point(center_x, center_y)
+            # To calculate the center of the bounding box
+            center = shapely.centroid(shapely.Polygon(bbox))
+            # Track whether this text was included in any room
+            included = False
             for room in self.layout.rooms:
                 # Create a polygon for each room
-                room_polygon = geom.Polygon([(p.x, p.y) for p in room.junctions])
-                print(room_polygon.contains(center))
-                if room_polygon.contains(center):
+                if room.polygon.contains(center):
                     if self.isDimension(text):
                         width, height = self.parse_dimension_text(text)
                         room.metadata.append(Dimension(width, height))
                     else:
                         room.metadata.append(Label(text))
+                    included = True
+                    break
+            if not included:
+                if self.isDimension(text):
+                    width, height = self.parse_dimension_text(text)
+                    self.layout.metadata.append(Dimension(width, height))
+                else:
+                    self.layout.metadata.append(Label(text))
                     
 
 def create_test_layout():
@@ -131,9 +137,8 @@ def create_test_layout():
         
     layout = Layout()
     for room_name, points in r2g.items():
-            junctions = [Point(x, y) for x, y in points]
-            edges = [Edge(junctions[i], junctions[i + 1]) for i in range(len(junctions) - 1)]
-            room = Room(junctions=junctions, edges=edges)
+            junctions = [(x, y) for x, y in points]
+            room = Room(shapely.Polygon(junctions))
             layout.add_room(room)
     return layout
 
