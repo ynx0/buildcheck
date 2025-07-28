@@ -93,6 +93,13 @@ class Room:
             next_point = Point(coords[(i + 1) % len(coords)][0], coords[(i + 1) % len(coords)][1])
             edges.append(Edge(current, next_point))
         return edges
+    @property
+    def name(self) -> str:
+        name = ""
+        for data in self.metadata:
+            if isinstance(data, Label):
+                name += data.text
+        return name
 
     def __str__(self):
         return (

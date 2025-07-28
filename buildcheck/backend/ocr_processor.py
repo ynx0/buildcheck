@@ -1,7 +1,7 @@
 import easyocr
 import cv2
 import matplotlib.pyplot as plt
-from .vectorization import *
+from vectorization import *
 import re
 import shapely  
 
