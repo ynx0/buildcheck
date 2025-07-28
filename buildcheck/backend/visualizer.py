@@ -4,9 +4,9 @@ import cv2
 import numpy as np
 from matplotlib.colors import ListedColormap
 import random
-from vectorization import *
-from ocr_processor import OCRProcessor
-from yolo_processor import YOLOProcessor
+from .vectorization import *
+from .ocr_processor import OCRProcessor
+from .yolo_processor import YOLOProcessor
 
 class Visualizer:
     def __init__(self):
