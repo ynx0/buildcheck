@@ -222,8 +222,7 @@ class Visualizer:
                 
                 # Get bounding box coordinates
                 bbox = symbol.bbox
-                x1, y1 = bbox.a.x, bbox.a.y
-                x2, y2 = bbox.c.x, bbox.c.y
+                x1, y1, x2, y2 = bbox.bounds
                 width = x2 - x1
                 height = y2 - y1
                 
@@ -405,8 +404,8 @@ def test_separate_analysis(image_path: str, model_path: str):
     print("Initializing OCR processor...")
     ocr_processor = OCRProcessor(image_path, layout)
     
-    print("Running OCR analysis...")
-    ocr_processor.ocrProcess()
+    # print("Running OCR analysis...")
+    # ocr_processor.ocrProcess()
     
     print("Initializing YOLO processor...")
     yolo_processor = YOLOProcessor(image_path, model_path, layout)
