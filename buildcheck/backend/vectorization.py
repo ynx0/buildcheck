@@ -3,6 +3,14 @@ from enum import Enum, auto
 from typing import Union
 from shapely.geometry import Polygon
 
+
+
+def is_4_point_polygon(polygon: Polygon) -> bool:
+    coords = list(polygon.exterior.coords)
+    return len(coords) == 5 and len(set(coords[:-1])) == 4  # 4 unique + 1 closing point
+
+
+
 class Category(Enum):
     DOOR = auto()
     WINDOW = auto()
