@@ -142,6 +142,5 @@ def assignments_table() -> rx.Component:
         width="100%",
     ), footer()
 
-
 def admin_assignments() -> rx.Component:
     return assignments_table()
