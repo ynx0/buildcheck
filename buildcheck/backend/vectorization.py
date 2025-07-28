@@ -35,21 +35,15 @@ class Edge:
     b: Point
 
 
-@dataclass
-class BBox:
-    a: Point  
-    b: Point  
-    c: Point  
-    d: Point
-
-    def as_list(self) -> list[Point]:
-        return [self.a, self.b, self.c, self.d]
-    
 # Represents a floor plan symbol such as a window, door, etc. 
 @dataclass(frozen=True)
 class Symbol:
     category: Category
-    bbox: BBox
+    bbox: Polygon
+
+    def __post_init__(self):
+        if not is_4_point_polygon(self.bbox):
+            raise ValueError(f"bbox failed 4pt test {self.bbox=}")
 
 
 # Metadata Definitions
