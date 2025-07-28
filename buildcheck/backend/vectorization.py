@@ -24,16 +24,6 @@ class Category(Enum):
     WINDOW = 8
 
 
-@dataclass
-class Point:
-    x: float
-    y: float
-
-@dataclass
-class Edge:
-    a: Point
-    b: Point
-
 
 # Represents a floor plan symbol such as a window, door, etc. 
 @dataclass(frozen=True)
