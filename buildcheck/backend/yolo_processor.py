@@ -40,7 +40,8 @@ class YOLOProcessor:
         )
         
         # Map class name to category
-        category = self.map_class_to_category(class_name)
+        # we need lowercase since the model.names dict keys are case sensitive.
+        category = self.map_class_to_category(class_name.lower())
         
         # Create symbol
         symbol = Symbol(category, bbox_obj)
