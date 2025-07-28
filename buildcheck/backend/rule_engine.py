@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional, Callable
 from copy import deepcopy
+from shapely import Point
 
 
 # This MUST be kept up to date with the `guidelines` table at all times
@@ -81,7 +82,7 @@ def rule_every_room_door(layout: Layout) -> Verdict:
 		if not has_door(room):
 			# for the location, we just pick a random junction for now
 			# later when we have shapely, we can compute the centroid of the polygon
-			failures.append(Failure(Guidelines.ROOMS_HAVE_DOOR, location=room.junctions[0]))
+			failures.append(Failure(Guidelines.ROOMS_HAVE_DOOR, location=room.polygon.centroid))
 
 	return failures
 

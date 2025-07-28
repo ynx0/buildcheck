@@ -99,6 +99,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "reflex" },
     { name = "requests" },
+    { name = "resend" },
     { name = "shapely" },
     { name = "streamlit" },
     { name = "supabase" },
@@ -114,6 +115,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "reflex", specifier = ">=0.8.0" },
     { name = "requests", specifier = ">=2.32.4" },
+    { name = "resend", specifier = ">=2.11.0" },
     { name = "shapely", specifier = ">=2.1.1" },
     { name = "streamlit", specifier = ">=1.47.1" },
     { name = "supabase", specifier = ">=2.16.0" },
@@ -727,11 +729,11 @@ wheels = [
 
 [[package]]
 name = "narwhals"
-version = "1.48.1"
+version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9b/da/fe15ccd311ebb8fbbdacc447ba5888306c0b4a6253f628d60df351c36c7d/narwhals-1.48.1.tar.gz", hash = "sha256:b375cfdfc20b84b5ac0926f34c5c1373eb23ebea48d47bf75e282161cda63e34", size = 515882, upload-time = "2025-07-24T19:02:19.14Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/58/0fbbfb13662297c8447d1872670da79f3f2a63fb68ae9aac9965cdc2d428/narwhals-2.0.0.tar.gz", hash = "sha256:d967bea54dfb6cd787abf3865ab4d72b8259d8f798c1c12c4eb693d5e9cebb24", size = 525527, upload-time = "2025-07-28T08:12:43.407Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/cf/411b2083991c6906634910ea0c5e5ea0a01f7f14da4194b39d7ad054c187/narwhals-1.48.1-py3-none-any.whl", hash = "sha256:76e3b069cf20a2746d8e227686b959530e98e8018c594a04e5f4f6f77e0872d9", size = 377332, upload-time = "2025-07-24T19:02:17.548Z" },
+    { url = "https://files.pythonhosted.org/packages/93/9d/9e2afb7d3d43bfa1a1f80d2da291064753305f9871851f1cd5a60d870893/narwhals-2.0.0-py3-none-any.whl", hash = "sha256:9c9fe8a969b090d783edbcb3b58e1d0d15f5100fdf85b53f5e76d38f4ce7f19a", size = 385206, upload-time = "2025-07-28T08:12:39.545Z" },
 ]
 
 [[package]]
@@ -1439,6 +1441,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e1/0a/929373653770d8a0d7ea76c37de6e41f11eb07559b103b1c02cafb3f7cf8/requests-2.32.4.tar.gz", hash = "sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422", size = 135258, upload-time = "2025-06-09T16:43:07.34Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7c/e4/56027c4a6b4ae70ca9de302488c5ca95ad4a39e190093d6c1a8ace08341b/requests-2.32.4-py3-none-any.whl", hash = "sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c", size = 64847, upload-time = "2025-06-09T16:43:05.728Z" },
+]
+
+[[package]]
+name = "resend"
+version = "2.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ee/a6/72a58e10bf3d4d3bf529daaa54296eae7252970eb4bfe6dd2a0bbc6c584d/resend-2.11.0.tar.gz", hash = "sha256:b85e526ccb3fa7432aead57f6cc137435c34b19d354be4cd2deba321dd9a4860", size = 15161, upload-time = "2025-07-10T01:52:47.364Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/57/2f/ed950bdf3aa6f167d510e484ba7a9792317ec9e5a1b807ba571269b01b9a/resend-2.11.0-py2.py3-none-any.whl", hash = "sha256:fefa22ae5c5c79aca706ce018c89f9fe181148ad368fac2f1b4a899e4608f117", size = 21564, upload-time = "2025-07-10T01:52:45.814Z" },
 ]
 
 [[package]]

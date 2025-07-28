@@ -75,7 +75,8 @@ class Room:
                 name += data.text
         return name
 
-    def __str__(self):
+
+    def __repr__(self):
         return (
             f"Room(polygon={self.polygon}, "
             f"symbols={self.symbols}, metadata=({self.metadata})"

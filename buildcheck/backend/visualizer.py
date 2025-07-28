@@ -2,11 +2,17 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.patches import Polygon as MplPolygon
 import cv2
-from vectorization import *
-from ocr_processor import OCRProcessor, create_test_layout
-from yolo_processor import YOLOProcessor
+import numpy as np
+from matplotlib.colors import ListedColormap
+import random
+from PIL import Image
 from typing import List, Tuple
 import colorsys
+
+from buildcheck.backend.vectorization import *
+from buildcheck.backend.ocr_processor import OCRProcessor
+from buildcheck.backend.yolo_processor import YOLOProcessor
+
 
 class FloorPlanVisualizer:
     def __init__(self, image_path: str, model_path: str = None):
@@ -297,12 +303,16 @@ class FloorPlanVisualizer:
 def create_comprehensive_visualization(image_path: str, model_path: str = None):
     """Create and display a comprehensive floor plan visualization"""
     
+    # Import layout creation
+    from .ocr_processor import create_test_layout
+    
+
     # Create visualizer
     visualizer = FloorPlanVisualizer(image_path, model_path)
     
     # Process the floor plan
     visualizer.process_floor_plan()
-    
+
     # Create visualization
     fig = visualizer.visualize(figsize=(20, 12), show_original=True)
     
