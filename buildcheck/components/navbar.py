@@ -37,19 +37,7 @@ def navbar() -> rx.Component:
                 variant="outline",
                 on_click=UserState.handle_logout
             ),
-            rx.cond(
-                UserState.role == "employee",
-                rx.icon_button(rx.icon("bell"), on_click=rx.redirect("/employee-notifcations"), variant="ghost"),
-                rx.cond(
-                    UserState.role == "admin",
-                    rx.icon_button(rx.icon("bell"), on_click=rx.redirect("/admin-notifications"), variant="ghost"),
-                    rx.cond(
-                        UserState.role == "reviewer",
-                        rx.icon_button(rx.icon("bell"), on_click=rx.redirect("/reviewer-notifications"), variant="ghost"),
-                        rx.fragment()
-                    )
-                )
-            ),
+            rx.icon_button(rx.icon("bell"), on_click=rx.redirect("/notifications-page"), variant="ghost"),
             rx.avatar(
                 fallback=UserState.nameIntials,
                 size="3"
