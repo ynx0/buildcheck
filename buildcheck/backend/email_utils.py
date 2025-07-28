@@ -13,10 +13,6 @@ load_dotenv()
 resend.api_key = os.getenv("RESEND_API_KEY")
 
 
-# for some reason we have a fixed set of titles we can insert as.
-# we list them here
-
-# i think we should remove this since titles should be generic
 class Titles(Enum):
     REVIEW_COMPLETED = "Review completed"
     SUBMISSION_RECIEVED = "Submission received"
