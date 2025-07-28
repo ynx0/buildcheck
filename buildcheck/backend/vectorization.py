@@ -11,20 +11,17 @@ def is_4_point_polygon(polygon: Polygon) -> bool:
 
 
 
+# must match from the model, i.e. YOLO(...).names
 class Category(Enum):
-    DOOR = auto()
-    WINDOW = auto()
-    STAIRS = auto()
-    WALL = auto()
-    OVEN = auto()
-    CHAIR = auto()
-    TABLE = auto()
-    BED = auto()
-    SINK = auto()
-    SOFA = auto()
-    TUB = auto()
-    COLUMN = auto()
-    RAILING = auto()
+    COLUMN = 0
+    CURTAIN_WALL = 1
+    DIMENSION = 2
+    DOOR = 3
+    RAILING = 4
+    SLIDING_DOOR = 5
+    STAIR_CASE = 6
+    WALL = 7
+    WINDOW = 8
 
 
 @dataclass
