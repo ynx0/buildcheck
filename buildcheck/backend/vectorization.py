@@ -79,8 +79,11 @@ class Room:
         self.metadata = metadata if metadata is not None else []
 
     @classmethod
-    def from_junctions(cls, json_data):
-        polygon = Polygon([(x, y) for x, y in json_data["room"]])
+    def from_junctions(cls, junctions):
+        """
+        junctions: cw/ccw ordered points that make up a polygon
+        """
+        polygon = Polygon([(x, y) for x, y in junctions])
         return cls(polygon)
 
     @property
