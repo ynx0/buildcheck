@@ -7,6 +7,7 @@ from .blueprints import bp_name2image
 from dotenv import load_dotenv
 from io import BytesIO
 import base64
+from json import JSONDecodeError
 
 load_dotenv()
 
@@ -37,10 +38,66 @@ def _img2b64(img: Image) -> str:
 	return img_b64
 
 
-def vectorize(img: Image):
+def unscale_point(x: int, y: int, scaling_factor: float):
+	# N.B. scaling_factor is what was used to shrink coords to 512x512
+	#      which is what we get.
+	#      i.e. scaled = (x,y) * scaling_factor
+	#      so we must multiply by scaling_factor^-1 to undo it
+	#      e.g. unscaled = scaled * scaling_factor^-1
+	#                    = (x,y) * scaling_factor * scaling_factor^-1
+	#                    = (x,y)
+	scale_inv = 1/scaling_factor
+	return (scale_inv * x, scale_inv * y)
+
+def unscale_room(juncts: list) -> list:
+	return list(map(lambda p: unscale_point(p), juncts))
+
+def vectorize(img: Image) -> list[Room]:
 	img_b64 = _img2b64(img)
 	res = requests.post(f'{R2G_API}/vectorize', json={"input": img_b64})
-	return res.json()
+
+	try:
+		payload = res.json()
+	except JSONDecodeError as e:
+		print("error calling vectorize")
+		print('check if runpod container is running')
+		print(e)
+
+
+	# extract rooms from payload
+	rooms_raw = payload["rooms"]
+	scaling_factor = payload["scaling_factor"]
+
+	print(f'{scaling_factor=} {rooms_raw=}')
+	print()
+	print()
+
+	# discard semantic for now, keeping only junction points
+	room_jcts_raw = list(map(lambda d: d['room_junctions'], rooms_raw))
+
+	print(f'{room_jcts_raw=}')
+	print()
+	print()
+
+	# scale rooms
+	room_jcts = [unscale_room(room) for room in room_jcts_raw]
+
+	print(f'{room_jcts=}')
+	print()
+	print()
+
+	# create `Room`s for each polygon-array
+
+	rooms = [Room.from_junctions(room) for room_jct in room_jcts]
+	print(f'{rooms=}')
+	print()
+	print()
+
+
+	return rooms
+
+
+
 
 
 if __name__ == '__main__':
