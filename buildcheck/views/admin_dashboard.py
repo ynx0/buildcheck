@@ -18,6 +18,11 @@ class AdminDashState(rx.State):
     review_time_avg_days: float = 2.3
     successes: list[dict] = []
 
+    violations = [
+        {"violation_type": "Room Size", "desc": "Living room too large", "guideline": "Section 2.3, Page 14", "freq": "high"},
+        {"violation_type": "Electrical Layout", "desc": "Insufficient outlets", "guideline": "Section 2.4, Page 3", "freq": "medium"},
+        {"violation_type": "Window placement", "desc": "Not enough windows", "guideline": "Section 3.4, Page 4", "freq": "low"},
+    ]
 
     @rx.event
     def no_op(self):
@@ -199,11 +204,6 @@ def main_content1() -> rx.Component:
 
 def common_violations() -> rx.Component:
 
-    violations = [
-        {"violation_type": "Room Size", "desc": "Living room too large", "guideline": "Section 2.3, Page 14", "freq": "high"},
-        {"violation_type": "Electrical Layout", "desc": "Insufficient outlets", "guideline": "Section 2.4, Page 3", "freq": "medium"},
-        {"violation_type": "Window placement", "desc": "Not enough windows", "guideline": "Section 3.4, Page 4", "freq": "low"},
-    ]
 
     return rx.card(
         rx.vstack(
@@ -218,15 +218,15 @@ def common_violations() -> rx.Component:
                     )
                 ),
                 rx.table.body(
-                    *[
-                        rx.table.row(
+                    rx.foreach(
+                        AdminDashState.violations,
+                        lambda violation: rx.table.row(
                             rx.table.cell(violation["violation_type"]),
                             rx.table.cell(violation["desc"]),
                             rx.table.cell(violation["guideline"]),
                             rx.table.cell(freq_tag(violation["freq"])),
                         )
-                        for violation in violations
-                    ]
+                    )
                 ),
                 width="100%",
                 # max_width="40em",
@@ -250,7 +250,7 @@ def main_content2() -> rx.Component:
     )
 
 
-# @rx.page(route='/admin-dashboard', on_load=AdminDashState.randomize_successes)
+@rx.page(on_load=AdminDashState.randomize_successes)
 def am_dashboard() -> rx.Component:
     return rx.vstack(
         rx.script(src=HTML2CANVAS_PRO_SRC),

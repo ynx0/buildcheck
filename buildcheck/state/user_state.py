@@ -4,7 +4,7 @@ class UserState(rx.State):
     #Global user state management.
     
     # User information
-    user_id: str = ""
+    user_id: int = ""
     name: str = ""
     nameIntials: str = ""
     email: str = ""
@@ -17,8 +17,9 @@ class UserState(rx.State):
         self.name = user_data["name"]
         self.email = user_data["email"]
         self.role = user_data["role"]
-        self.badge_number = user_data["badge_number"]
+        self.badge_number = str(user_data["badge_number"])
         self.nameIntials = "".join(part[0].upper() for part in self.name.split() if part)  # Update initials after setting name 
+
     def clear_user(self):
         #Clear user information on logout.
         self.user_id = ""
