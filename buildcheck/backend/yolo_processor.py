@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from vectorization import *
+from .vectorization import *
 import shapely
 import shapely.geometry as geom
 
@@ -136,10 +136,12 @@ class YOLOProcessor:
                 print("No symbols detected")
 
 
+
+
 def test_yolo_processor(image_path: str, model_path: str):
 
     # Import the test layout creation function from OCR processor
-    from ocr_processor import create_test_layout
+    from .ocr_processor import create_test_layout
     
     # Create test layout
     layout = create_test_layout()
@@ -149,7 +151,7 @@ def test_yolo_processor(image_path: str, model_path: str):
     
     # Process with current threshold
     processor.yoloProcesser(0.5)
-        
+
     
     processor.print_room_summary()
 
