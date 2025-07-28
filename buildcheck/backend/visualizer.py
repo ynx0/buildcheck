@@ -7,6 +7,7 @@ import random
 from .vectorization import *
 from .ocr_processor import OCRProcessor
 from .yolo_processor import YOLOProcessor
+from PIL import Image
 
 class Visualizer:
     def __init__(self):
@@ -402,13 +403,13 @@ def test_separate_analysis(image_path: str, model_path: str):
     layout = create_test_layout()
     
     print("Initializing OCR processor...")
-    ocr_processor = OCRProcessor(image_path, layout)
+    ocr_processor = OCRProcessor(Image.open(image_path), layout)
     
     print("Running OCR analysis...")
     ocr_processor.ocrProcess()
     
     print("Initializing YOLO processor...")
-    yolo_processor = YOLOProcessor(image_path, model_path, layout)
+    yolo_processor = YOLOProcessor(Image.open(image_path), model_path, layout)
     
     print("Running YOLO analysis...")
     yolo_processor.yoloProcesser(confidence_threshold=0.5, intersection_threshold=0.05)

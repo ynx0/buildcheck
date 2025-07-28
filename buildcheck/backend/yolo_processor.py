@@ -6,10 +6,15 @@ from .vectorization import *
 import shapely
 import shapely.geometry as geom
 from shapely.geometry import Polygon
+import numpy as np
+from PIL import Image
+
+
+YOLO_MODEL_PATH = "buildcheck/backend/best.pt"
 
 class YOLOProcessor:
-    def __init__(self, image_path: str, model_path: str, layout: Layout):
-        self.image_path = image_path
+    def __init__(self, image_src, model_path: str, layout: Layout):
+        self.image_src = image_src
         self.layout = layout
         self.model = YOLO(model_path)
 
@@ -59,7 +64,7 @@ class YOLOProcessor:
         
         # Run YOLO inference
         results = self.model.predict(
-            source=self.image_path, 
+            source=self.image_src,
             conf=confidence_threshold,
             save=False,  # Don't save automatically
             verbose=False
@@ -142,7 +147,7 @@ def test_yolo_processor(image_path: str, model_path: str):
     layout = create_test_layout()
     
     # Create YOLO processor
-    processor = YOLOProcessor(image_path, model_path, layout)
+    processor = YOLOProcessor(Image.open(image_path), model_path, layout)
     
     # Process with current threshold
     processor.yoloProcesser(0.5)

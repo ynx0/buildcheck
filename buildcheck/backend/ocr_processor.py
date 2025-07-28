@@ -3,12 +3,14 @@ import cv2
 import matplotlib.pyplot as plt
 from .vectorization import *
 import re
-import shapely  
+import shapely
+from PIL import Image
+import numpy as np
 
 class OCRProcessor:
-    def __init__(self, image_path: str, layout: Layout):
+    def __init__(self, image_pil: Image, layout: Layout):
         self.reader = easyocr.Reader(['en'], gpu=False)
-        self.image_path = image_path
+        self.image_pil = image_pil
         self.layout = layout
 
     @staticmethod
@@ -55,7 +57,8 @@ class OCRProcessor:
     # and fill room objects with their labels and dimensions 
     def ocrProcess(self) :
         # Extract text with bounding boxes from image
-        image = cv2.imread(self.image_path)
+        image = cv2.cvtColor(np.array(self.image_pil), cv2.COLOR_RGB2BGR)
+
         # Perform OCR
         results = self.reader.readtext(image)
         for bbox, text, _ in results:
@@ -147,7 +150,7 @@ def test_ocr_processor(image_path: str):
     layout = create_test_layout()
     
     # Create OCR processor
-    processor = OCRProcessor(image_path, layout)
+    processor = OCRProcessor(Image.open(image_path), layout)
     
     # Process the image
     processor.ocrProcess()
