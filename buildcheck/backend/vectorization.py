@@ -67,7 +67,7 @@ class Room:
         polygon = Polygon([(x, y) for x, y in junctions])
         return cls(polygon)
 
-    def __str__(self):
+    def __repr__(self):
         return (
             f"Room(polygon={self.polygon}, "
             f"symbols={self.symbols}, metadata=({self.metadata})"
