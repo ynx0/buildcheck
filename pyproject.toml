@@ -5,7 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "easyocr>=1.7.2",
+    "matplotlib>=3.10.3",
+    "pandas==2.2.2",
+    "pillow>=11.3.0",
     "python-dotenv>=1.1.1",
     "reflex>=0.8.0",
+    "shapely>=2.1.1",
+    "streamlit>=1.47.1",
     "supabase>=2.16.0",
+    "ultralytics>=8.3.169",
+    "requests>=2.32.4",
 ]

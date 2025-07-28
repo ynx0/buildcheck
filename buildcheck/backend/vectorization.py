@@ -1,54 +1,40 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Union
+from shapely.geometry import Polygon
 
+
+
+def is_4_point_polygon(polygon: Polygon) -> bool:
+    coords = list(polygon.exterior.coords)
+    return len(coords) == 5 and len(set(coords[:-1])) == 4  # 4 unique + 1 closing point
+
+
+
+# must match from the model, i.e. YOLO(...).names
 class Category(Enum):
-    DOOR = auto()
-    WINDOW = auto()
-    STAIRS = auto()
-    WALL = auto()
-    OVEN = auto()
-    CHAIR = auto()
-    TABLE = auto()
-    BED = auto()
-    SINK = auto()
-    SOFA = auto()
-    TUB = auto()
-    # Extend as needed
+    COLUMN = 0
+    CURTAIN_WALL = 1
+    DIMENSION = 2
+    DOOR = 3
+    RAILING = 4
+    SLIDING_DOOR = 5
+    STAIR_CASE = 6
+    WALL = 7
+    WINDOW = 8
 
 
-@dataclass
-class Point:
-    x: float
-    y: float
 
-@dataclass
-class Edge:
-    a: Point
-    b: Point
-
-    def __str__(self):
-        return f"Edge(a=({self.a.x}, {self.a.y}), b=({self.b.x}, {self.b.y}))"
-    
-
-@dataclass
-class BBox:
-    a: Point  
-    b: Point  
-    c: Point  
-    d: Point  
-    def as_list(self) -> list[Point]:
-        return [self.a, self.b, self.c, self.d]
-    
 # Represents a floor plan symbol such as a window, door, etc. 
-@dataclass
+@dataclass(frozen=True)
 class Symbol:
     category: Category
-    bbox: BBox
+    bbox: Polygon
 
-    def __str__(self):
-        return f"Symbol(category={self.category}, bbox={self.bbox})"
-    
+    def __post_init__(self):
+        if not is_4_point_polygon(self.bbox):
+            raise ValueError(f"bbox failed 4pt test {self.bbox=}")
+
 
 # Metadata Definitions
 @dataclass
@@ -65,38 +51,34 @@ Metadata = Union[Label, Dimension]
 class Room:
     def __init__(
         self,
-        junctions: list[Point],  
-        symbols: list[Symbol] = [],
-        metadata: list[Metadata] = [],
-        edges: list[Edge] = []
+        polygon: Polygon,  
+        symbols: list[Symbol] = None,
+        metadata: list[Metadata] = None,
     ):
-        self.junctions = junctions
-        self.symbols = symbols
-        self.metadata = metadata
-        self.edges = edges
+        self.polygon = polygon
+        self.symbols = symbols if symbols is not None else []  # NEW LIST!
+        self.metadata = metadata if metadata is not None else []
 
     @classmethod
-    def from_json(cls, json_data):
-        points = [Point(x, y) for x, y in json_data["room"]]
-        return cls(points)
-
+    def from_junctions(cls, junctions):
+        """
+        junctions: cw/ccw ordered points that make up a polygon
+        """
+        polygon = Polygon([(x, y) for x, y in junctions])
+        return cls(polygon)
 
     def __str__(self):
         return (
-            f"Room(junctions={self.junctions}, "
-            f"symbols={self.symbols}, metadata={self.metadata})"
+            f"Room(polygon={self.polygon}, "
+            f"symbols={self.symbols}, metadata=({self.metadata})"
         )
 
 class Layout:
-    def __init__(
-        self,
-        rooms: list[Room] = [],
-        metadata: list[Metadata] = [],
-        file_name: str = None,
-    ):
-        self.rooms = rooms
-        self.metadata = metadata
+    def __init__(self, rooms: list[Room] = None, metadata: list[Metadata] = None, file_name: str = None):
+        self.rooms = rooms if rooms is not None else []
+        self.metadata = metadata if metadata is not None else []
         self.file_name = file_name
 
     def add_room(self, room: Room):
         self.rooms.append(room)
+    

@@ -5,7 +5,7 @@ from buildcheck.components.status_tag import status_tag
 from buildcheck.state.user_state import UserState
 from buildcheck.backend.supabase_client import supabase_client
 from typing import List
-
+from buildcheck.backend.blueprints import bp_name2path
 
 
 
@@ -40,10 +40,8 @@ class EmployeeUploadState(rx.State):
         file = files[0]
         data = await file.read()
         uid  = await self.get_var_value(UserState.user_id)
-        user_dir = rx.get_upload_dir() / ('user_' + str(uid))
-        user_dir.mkdir(parents=True, exist_ok=True)
+        path = bp_name2path(file.name, uid)
 
-        path = user_dir / file.name
         with path.open("wb") as f:
             f.write(data)
 
@@ -97,8 +95,12 @@ def upload_component() -> rx.Component:
                 ),
                 id="upload",
                 multiple=False,
+                # TODO for now, we won't support uploading pdfs,
+                #      but instead require submitting images of floorplans directly
                 accept={
-                    "application/pdf": [".pdf"]
+                    # "application/pdf": [".pdf"],
+                    "image/png": ['.png'],
+                    "image/jpeg": ['.jpg', '.jpeg']
                 },
             ),
             rx.text(rx.selected_files("upload")),
