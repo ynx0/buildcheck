@@ -6,6 +6,8 @@ from .vectorization import *
 import shapely
 import shapely.geometry as geom
 from shapely.geometry import Polygon
+import numpy as np
+from PIL import Image
 
 
 YOLO_MODEL_PATH = "buildcheck/backend/best.pt"
@@ -145,7 +147,7 @@ def test_yolo_processor(image_path: str, model_path: str):
     layout = create_test_layout()
     
     # Create YOLO processor
-    processor = YOLOProcessor(image_path, model_path, layout)
+    processor = YOLOProcessor(Image.open(image_path), model_path, layout)
     
     # Process with current threshold
     processor.yoloProcesser(0.5)

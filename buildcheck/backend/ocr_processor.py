@@ -5,6 +5,7 @@ from .vectorization import *
 import re
 import shapely
 from PIL import Image
+import numpy as np
 
 class OCRProcessor:
     def __init__(self, image_pil: Image, layout: Layout):
