@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Union
 from shapely.geometry import Polygon
+
 class Category(Enum):
     DOOR = auto()
     WINDOW = auto()
@@ -28,28 +29,23 @@ class Edge:
     a: Point
     b: Point
 
-    def __str__(self):
-        return f"Edge(a=({self.a.x}, {self.a.y}), b=({self.b.x}, {self.b.y}))"
-    
 
 @dataclass
 class BBox:
     a: Point  
     b: Point  
     c: Point  
-    d: Point  
+    d: Point
+
     def as_list(self) -> list[Point]:
         return [self.a, self.b, self.c, self.d]
     
 # Represents a floor plan symbol such as a window, door, etc. 
-@dataclass
+@dataclass(frozen=True)
 class Symbol:
     category: Category
     bbox: BBox
 
-    def __str__(self):
-        return f"Symbol(category={self.category}, bbox={self.bbox})"
-    
 
 # Metadata Definitions
 @dataclass
@@ -73,6 +69,7 @@ class Room:
         self.polygon = polygon
         self.symbols = symbols if symbols is not None else []  # NEW LIST!
         self.metadata = metadata if metadata is not None else []
+
     @classmethod
     def from_junctions(cls, json_data):
         polygon = Polygon([(x, y) for x, y in json_data["room"]])
