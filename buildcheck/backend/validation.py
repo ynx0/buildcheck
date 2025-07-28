@@ -42,5 +42,8 @@ def run_validation_employee(file_name: str, employee_id: int) -> list[Failure]:
 
 if __name__ == '__main__':
     # assuming we have `uploaded_files/user_2/2d-floor-plan.jpg` exists
-    failures = run_validation_employee('2d-floor-plan.jpg', 2)
+    # failures = run_validation_employee('2d-floor-plan.jpg', 2)
+    failures = run_validation('2d-floor-plan.jpg', Image.open('./2d-floor-plan.jpg'))
+
+
     pprint(failures)
