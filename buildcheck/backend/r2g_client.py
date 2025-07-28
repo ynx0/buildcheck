@@ -70,9 +70,6 @@ def vectorize(img: Image) -> list[Room]:
 		print(e)
 		raise Exception("error calling vectorize. check if runpod container is running")
 
-	if DEBUG:
-		print(f'{payload=}')
-
 	# extract rooms from payload
 	rooms_raw = payload["rooms"]
 	scale_factor = payload["scale_factor"]
@@ -95,21 +92,21 @@ def vectorize(img: Image) -> list[Room]:
 	rooms = [Room.from_junctions(room_poly) for room_poly in room_polys]
 
 	if DEBUG:
-		print(f'{scale_factor=} {rooms_raw=}')
-		print()
-		print()
+		# print(f'{scale_factor=} {rooms_raw=}')
+		# print()
+		# print()
 
-		print(f'{room_polys_raw=}')
-		print()
-		print()
+		# print(f'{room_polys_raw=}')
+		# print()
+		# print()
 
-		print(f'{room_polys_flat=}')
-		print()
-		print()
+		# print(f'{room_polys_flat=}')
+		# print()
+		# print()
 
-		print(f'{room_polys=}')
-		print()
-		print()
+		# print(f'{room_polys=}')
+		# print()
+		# print()
 
 
 		print(f'{rooms=}')
