@@ -2,12 +2,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.patches import Polygon as MplPolygon
 import cv2
-import numpy as np
 from vectorization import *
 from ocr_processor import OCRProcessor, create_test_layout
 from yolo_processor import YOLOProcessor
-import shapely.geometry as geom
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 import colorsys
 
 class FloorPlanVisualizer:
