@@ -10,15 +10,16 @@ from buildcheck.state.user_state import UserState # Import global user state (wh
 
 
 # 1. Define Notification State to track user info and hold fetched notifications
-class NotificationState(rx.state):
+class NotificationState(rx.State):
     # List to store all notifications fetched from database
     notifications: list[dict] = []
 
     @rx.var
     async def role_heading(self) -> str:
          """Create a properly formatted heading based on user's role"""
-         role = await self.get_var_value(UserState.role)
-         return role.capitalize()
+         usr = await self.get_state(UserState)
+
+         return usr.role.capitalize()
     
     @staticmethod
     def format_timestamp(timestamp_str: str) -> str:
