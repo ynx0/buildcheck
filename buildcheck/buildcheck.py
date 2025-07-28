@@ -162,11 +162,6 @@ app = rx.App(
 )
 
 app.add_page(index, route="/", title="Login", description="Login or create an account")
-app.add_page(views.validation_page, route="/validation")
-app.add_page(views.employee_blueprint, route="/blueprint-pending")
-app.add_page(views.employee_notifications, route="/employee-notifications")
-app.add_page(views.admin_notifications, route="/admin-notifications")
-app.add_page(views.reviewer_notifications, route="/reviewer-notifications")
 app.add_page(em.upload_page, title="Employee Dashboard", description="This page is where the employee can view their case.")
 app.add_page(rv_assignment, title="Blueprint Assignment")
 app.add_page(employee_view, route="/employee-view", title="Employee View")
