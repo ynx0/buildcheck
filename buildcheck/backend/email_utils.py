@@ -28,17 +28,19 @@ def send_email(user_email, user_name, status, message):
     """
 
     # To prepare the email details in a dictionary (payload)
+
     email_payload = {
         "from": "ARCH System <onboarding@resend.dev>",  # Sender email
-        "to": ["archsystemksa@gmail.com"],  # Recipient(s) (Arch team only for the time being)
+        # TODO change back to archsystemksa@gmail.com
+        "to": [f"yaseen.nvt@gmail.com"],  # Recipient(s) (Arch team only for the time being)
         "subject": subject,
         "html": html_content,
     }
 
     # If the status is approve, attach the approval letter PDF
-    if status.lower() == "approve":
+    if approval:
         # Open the PDF in binary mode and read its content
-        with open("ApprovalLetter.pdf", "rb") as f:
+        with open("buildcheck/backend/ApprovalLetter.pdf", "rb") as f:
             encoded_pdf = base64.b64encode(f.read()).decode("utf-8")
             # Add attachments to the payload
             email_payload["attachments"] = [
@@ -103,3 +105,9 @@ def notify_all(title, message, case_id):
         
          # 2. Send them an email with the same title and message
         send_email(user["email"], user["name"], title, message)
+
+
+if __name__ == '__main__':
+    # notify_all(Titles.REVIEW_COMPLETED.value, "The thing worked.", 2)
+    send_email("omar@aramco.com", "omar123", "approved yay", "everything is great", approval=True)
+
