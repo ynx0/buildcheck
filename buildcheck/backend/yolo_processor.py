@@ -11,7 +11,7 @@ class YOLOProcessor:
         self.image_path = image_path
         self.layout = layout
         self.model = YOLO(model_path)
-        
+
     @staticmethod
     def map_class_to_category(class_name: str) -> Category:
         # Map YOLO detected class names to vectorization class Category enum        
@@ -21,7 +21,7 @@ class YOLOProcessor:
             'door': Category.DOOR,
             'railing': Category.RAILING,
             'sliding door': Category.DOOR,
-            'stair case': Category.STAIRS,
+            'stair case': Category.STAIR_CASE,
             'wall': Category.WALL,
             'window': Category.WINDOW,
         }
