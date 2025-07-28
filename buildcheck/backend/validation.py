@@ -3,7 +3,10 @@ from .vectorization import *
 from pathlib import Path
 from .blueprints import *
 from .r2g_client import vectorize
-from .rule_engine import validate_ajyal
+from .rule_engine import validate_ajyal, Failure
+from pprint import pprint
+from .yolo_processor import YOLOProcessor, YOLO_MODEL_PATH
+from .ocr_processor import OCRProcessor
 
 
 def run_validation(file_name: str, image: Image) -> list[Failure]:
@@ -27,7 +30,6 @@ def run_validation(file_name: str, image: Image) -> list[Failure]:
     # run OCR on the layout
     processor_ocr = OCRProcessor(image, layout)
     processor_ocr.ocrProcess()
-    processor_ocr.print_room_summary()
 
     # run rules checking engine on layout
     failures = validate_ajyal(layout)
@@ -36,4 +38,9 @@ def run_validation(file_name: str, image: Image) -> list[Failure]:
 
 
 def run_validation_employee(file_name: str, employee_id: int) -> list[Failure]:
-    return run_validation(bp_name2image(file_name, employee_id))
+    return run_validation(file_name, bp_name2image(file_name, employee_id))
+
+if __name__ == '__main__':
+    # assuming we have `uploaded_files/user_2/2d-floor-plan.jpg` exists
+    failures = run_validation_employee('2d-floor-plan.jpg', 2)
+    pprint(failures)
