@@ -1,5 +1,5 @@
 from ultralytics import YOLO
-from vectorization import *
+from buildcheck.backend.vectorization import *
 import shapely.geometry as geom
 from shapely.geometry import Polygon
 import numpy as np

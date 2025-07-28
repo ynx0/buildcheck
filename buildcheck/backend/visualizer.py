@@ -10,7 +10,7 @@ from typing import List, Tuple
 import colorsys
 
 from buildcheck.backend.vectorization import *
-from buildcheck.backend.ocr_processor import OCRProcessor
+from buildcheck.backend.ocr_processor import OCRProcessor, create_test_layout
 from buildcheck.backend.yolo_processor import YOLOProcessor
 
 

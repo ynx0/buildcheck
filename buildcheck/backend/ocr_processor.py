@@ -1,6 +1,6 @@
 import easyocr
 import cv2
-from vectorization import *
+from buildcheck.backend.vectorization import *
 import re
 import shapely
 from PIL import Image
