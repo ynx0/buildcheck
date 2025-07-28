@@ -77,17 +77,6 @@ class Room:
         polygon = Polygon([(x, y) for x, y in junctions])
         return cls(polygon)
 
-    @property
-    def edges(self) -> list[Edge]:
-        coords = list(self.polygon.exterior.coords[:-1])  # Remove duplicate last point
-        edges = []
-        
-        for i in range(len(coords)):
-            current = Point(coords[i][0], coords[i][1])
-            next_point = Point(coords[(i + 1) % len(coords)][0], coords[(i + 1) % len(coords)][1])
-            edges.append(Edge(current, next_point))
-        return edges
-
     def __str__(self):
         return (
             f"Room(polygon={self.polygon}, "
