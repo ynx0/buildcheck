@@ -10,15 +10,15 @@ from buildcheck.state.user_state import UserState # Import global user state (wh
 
 
 # 1. Define Notification State to track user info and hold fetched notifications
-class NotificationState(UserState):
+class NotificationState(rx.state):
     # List to store all notifications fetched from database
     notifications: list[dict] = []
 
     @rx.var
-    def role_heading(self) -> str:
-        """Create a properly formatted heading based on user's role"""
-        # Capitalize the role for heading (e.g., "Admin", "Reviewer")
-        return self.role.capitalize() 
+    async def role_heading(self) -> str:
+         """Create a properly formatted heading based on user's role"""
+         role = await self.get_var_value(UserState.role)
+         return role.capitalize()
     
     @staticmethod
     def format_timestamp(timestamp_str: str) -> str:
@@ -38,13 +38,14 @@ class NotificationState(UserState):
         return len(self.notifications) > 0
 
     @rx.event
-    def load_notifications(self):
+    async def load_notifications(self):
         """Fetch all notifications for the current logged-in user from database"""
         try:
             # Query our database for notifications belonging to current user
+            uid = await self.get_var_value(UserState.user_id)
             response = supabase_client.table("notifications") \
                 .select("*") \
-                .eq("user_id", self.user_id) \
+                .eq("user_id", uid) \
                 .order("created_at", desc=True) \
                 .execute()
 

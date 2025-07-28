@@ -1,17 +1,12 @@
 import os  # For accessing environment variables
 from dotenv import load_dotenv  # To load variables from a .env file
-from supabase import create_client  # To interact with the database
 import resend  # Resend email service to send emails
 from datetime import datetime, timezone  # To work with timezone aware datetimes
+import base64  # For encoding attachments
+from buildcheck.backend.supabase_client import supabase_client as supabase
 
 # Load environment variables from a .env file (for sensitive info like API keys)
 load_dotenv()
-
-# Get Supabase credentials from environment variables
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-# Initialize the Supabase client using the credentials
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Set the Resend API key (used for sending emails)
 resend.api_key = os.getenv("RESEND_API_KEY")
@@ -44,11 +39,13 @@ def send_email(user_email, user_name, status, message):
     if status.lower() == "approve":
         # Open the PDF in binary mode and read its content
         with open("ApprovalLetter.pdf", "rb") as f:
+            encoded_pdf = base64.b64encode(f.read()).decode("utf-8")
             # Add attachments to the payload
             email_payload["attachments"] = [
                 {
                     "filename": "ApprovalLetter.pdf",
-                    "content": f.read(),
+                    "content": encoded_pdf,
+                    "type": "application/pdf"  # may help avoid bugs in some APIs
                 }
             ]
 
@@ -68,16 +65,41 @@ def insert_notification(user_id, title, message):
         "created_at": datetime.now(timezone.utc).isoformat(),  # Store current UTC time
     }).execute()
 
-def notify_all_roles(title, message):
+def notify_all(title, message, case_id):
     """
-    Sends an email and inserts a notification for every user role (admin, employee, reviewer).
-    For each user, an internal notification is inserted, and an email is sent.
+    Notifies both the submitter and reviewer of a specific case.
+
+    Args:
+        title (str): Notification title (e.g. "Approved", "Rejected").
+        message (str): Message body.
+        case_id (int): ID of the case to notify its submitter and reviewer.
     """
-    roles = ["admin", "employee", "reviewer"]  # Roles to notify
-    for role in roles:
-        # Query all users in the 'users' table with the current role
-        users_resp = supabase.table("users").select("*").eq("role", role).execute()
-        if users_resp.data:  # If there are users for this role
-            for user in users_resp.data: # Loop through each user in the result
-                insert_notification(user["id"], title, message)  # Add notification to DB
-                send_email(user["email"], user["name"], title, message)  # Send email notification
+    # STEP 1: Get the IDs of the submitter and reviewer for the given case
+    # This sends a request to the "cases" table in the database to find the row with this case_id,
+    # and returns the submitter_id and reviewer_id (which are both user IDs).
+    response = supabase.table("cases").select("submitter_id, reviewer_id").eq("id", case_id).single().execute()
+    case_data = response.data
+
+    # If no case data is returned (invalid case ID), print an error and stop the function
+    if not case_data:
+        print(f"[notify_all] No case found with ID {case_id}")
+        return
+    
+    # STEP 2: Create a list of both user IDs so we can fetch their info
+    user_ids = [case_data["submitter_id"], case_data["reviewer_id"]]
+
+    # STEP 3: Get the users' details (name and email) using their IDs
+    users_response = supabase.table("users").select("id, name, email").in_("id", user_ids).execute()
+
+    # If no user data is returned (e.g., deleted users), stop here
+    if not users_response.data:
+        print(f"[notify_all] No users found for case ID {case_id}")
+        return
+
+    # STEP 4: For each user (submitter and reviewer) we do the following:
+    for user in users_response.data:
+        # 1. Add a notification to the notifications table in the database
+        insert_notification(user["id"], title, message)
+        
+         # 2. Send them an email with the same title and message
+        send_email(user["email"], user["name"], title, message)
