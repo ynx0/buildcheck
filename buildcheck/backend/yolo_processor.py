@@ -1,7 +1,4 @@
 from ultralytics import YOLO
-import cv2
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 from vectorization import *
 import shapely.geometry as geom
 
