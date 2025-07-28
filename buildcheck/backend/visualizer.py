@@ -397,7 +397,7 @@ def test_separate_analysis(image_path: str, model_path: str):
     """Test function that creates separate OCR and YOLO visualizations."""
     
     # Import layout creation
-    from ocr_processor import create_test_layout
+    from .ocr_processor import create_test_layout
     
     print("Creating test layout...")
     layout = create_test_layout()
