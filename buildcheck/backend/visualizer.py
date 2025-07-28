@@ -43,7 +43,7 @@ class FloorPlanVisualizer:
         
         # Process OCR
         print("Processing OCR...")
-        ocr_processor = OCRProcessor(self.image_path, self.layout)
+        ocr_processor = OCRProcessor(Image.open(self.image_path), self.layout)
         ocr_processor.ocrProcess()
         
         # Process YOLO
@@ -299,7 +299,7 @@ class FloorPlanVisualizer:
         print(f"Total Rooms: {len(self.layout.rooms)}")
 
 
-def create_comprehensive_visualization(image_path: str, model_path: str = None):
+def create_comprehensive_visualization(image_path: str, model_path: str):
     """Create and display a comprehensive floor plan visualization"""
     
     # Import layout creation
