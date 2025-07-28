@@ -15,7 +15,7 @@ from buildcheck.backend.yolo_processor import YOLOProcessor
 
 
 class FloorPlanVisualizer:
-    def __init__(self, image_path: str, model_path: str = None):
+    def __init__(self, image_path: str, model_path: str):
         self.image_path = image_path
         self.model_path = model_path
         self.layout = None
@@ -46,11 +46,10 @@ class FloorPlanVisualizer:
         ocr_processor = OCRProcessor(self.image_path, self.layout)
         ocr_processor.ocrProcess()
         
-        # Process YOLO if model path is provided
-        if self.model_path:
-            print("Processing YOLO...")
-            yolo_processor = YOLOProcessor(self.image_path, self.model_path, self.layout)
-            yolo_processor.yoloProcesser(confidence_threshold=0.5)
+        # Process YOLO
+        print("Processing YOLO...")
+        yolo_processor = YOLOProcessor(self.image_path, self.model_path, self.layout)
+        yolo_processor.yoloProcesser(confidence_threshold=0.5)
     
     def find_symbol_room_connections(self, symbol: Symbol) -> List[str]:
         connected_rooms = []
@@ -329,7 +328,7 @@ def create_comprehensive_visualization(image_path: str, model_path: str = None):
 if __name__ == "__main__":
     # Configuration
     image_path = "assets/blueprint.jpg"
-    model_path = "buildcheck/backend/best.pt"  # Set to None if YOLO model not available
+    model_path = "buildcheck/backend/best.pt"
     
     # Create comprehensive visualization
     visualizer = create_comprehensive_visualization(image_path, model_path)
