@@ -6,7 +6,7 @@ import re
 import shapely  
 
 class OCRProcessor:
-    def __init__(self, image_path: str, layout: Layout):
+    def __init__(self, image_path, layout: Layout):
         self.reader = easyocr.Reader(['en'], gpu=False)
         self.image_path = image_path
         self.layout = layout

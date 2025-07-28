@@ -24,32 +24,16 @@ class Category(Enum):
     WINDOW = 8
 
 
-@dataclass
-class Point:
-    x: float
-    y: float
 
-@dataclass
-class Edge:
-    a: Point
-    b: Point
-
-
-@dataclass
-class BBox:
-    a: Point  
-    b: Point  
-    c: Point  
-    d: Point
-
-    def as_list(self) -> list[Point]:
-        return [self.a, self.b, self.c, self.d]
-    
 # Represents a floor plan symbol such as a window, door, etc. 
 @dataclass(frozen=True)
 class Symbol:
     category: Category
-    bbox: BBox
+    bbox: Polygon
+
+    def __post_init__(self):
+        if not is_4_point_polygon(self.bbox):
+            raise ValueError(f"bbox failed 4pt test {self.bbox=}")
 
 
 # Metadata Definitions
@@ -83,16 +67,6 @@ class Room:
         polygon = Polygon([(x, y) for x, y in junctions])
         return cls(polygon)
 
-    @property
-    def edges(self) -> list[Edge]:
-        coords = list(self.polygon.exterior.coords[:-1])  # Remove duplicate last point
-        edges = []
-        
-        for i in range(len(coords)):
-            current = Point(coords[i][0], coords[i][1])
-            next_point = Point(coords[(i + 1) % len(coords)][0], coords[(i + 1) % len(coords)][1])
-            edges.append(Edge(current, next_point))
-        return edges
     @property
     def name(self) -> str:
         name = ""

@@ -56,10 +56,8 @@ class FloorPlanVisualizer:
     
     def get_symbol_center(self, symbol: Symbol) -> Tuple[float, float]:
         """Get the center point of a symbol"""
-        bbox = symbol.bbox
-        center_x = (bbox.a.x + bbox.c.x) / 2
-        center_y = (bbox.a.y + bbox.c.y) / 2
-        return center_x, center_y
+        center = symbol.bbox.centroid
+        return center.x, center.y
     
     def visualize(self, figsize=(16, 12), show_original=True):
         """Create a comprehensive visualization of the floor plan"""
@@ -165,11 +163,12 @@ class FloorPlanVisualizer:
         for symbol, annotation_text in symbol_annotations:
             bbox = symbol.bbox
             
-            # Draw symbol bounding box
+            minx, miny, maxx, maxy = bbox.bounds
+
             rect = patches.Rectangle(
-                (bbox.a.x, bbox.a.y),
-                bbox.c.x - bbox.a.x,
-                bbox.c.y - bbox.a.y,
+                (minx, miny),           # bottom-left corner
+                maxx - minx,            # width
+                maxy - miny,            # height
                 linewidth=2,
                 edgecolor=symbol_colors.get(symbol.category, 'black'),
                 facecolor='none'

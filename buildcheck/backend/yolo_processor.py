@@ -3,11 +3,10 @@ import cv2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from vectorization import *
-import shapely
 import shapely.geometry as geom
 
 class YOLOProcessor:
-    def __init__(self, image_path: str, model_path: str, layout: Layout):
+    def __init__(self, image_path, model_path: str, layout: Layout):
         self.image_path = image_path
         self.layout = layout
         self.model = YOLO(model_path)
@@ -28,37 +27,26 @@ class YOLOProcessor:
         # Return mapped category or default to WALL if not found
         return class_mapping.get(class_name, Category.WALL)
     
-    def create_symbol_from_detection(self, class_name: str, bbox: list) -> Symbol:
-        x1, y1, x2, y2 = bbox
-        
-        # Create BBox object with four corner points
-        bbox_obj = BBox(
-            a=Point(x1, y1),  # Top-left
-            b=Point(x2, y1),  # Top-right
-            c=Point(x2, y2),  # Bottom-right
-            d=Point(x1, y2)   # Bottom-left
-        )
-        
+    def create_symbol_from_detection(self, class_name: str, bbox: Polygon) -> Symbol:
+
         # Map class name to category
         # we need lowercase since the model.names dict keys are case sensitive.
         category = self.map_class_to_category(class_name.lower())
         
         # Create symbol
-        symbol = Symbol(category, bbox_obj)
+        symbol = Symbol(category, bbox)
         
         return symbol
     
-    def find_rooms_for_symbol(self, bbox: list, intersection_threshold: float = 0.05) -> list[Room]:
-        x1, y1, x2, y2 = bbox
-        symbol_poly = geom.Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])
-        
+    def find_rooms_for_symbol(self, symbol_bbox: Polygon, intersection_threshold: float = 0.05) -> list[Room]:
+
         room_matches = []
         
         for room in self.layout.rooms:
             # Returns True if symbol and room overlap at all
-            intersects = room.polygon.intersects(symbol_poly)
+            intersects = room.polygon.intersects(symbol_bbox)
             # Check if intersection meets threshold
-            if intersects or room.polygon.contains(symbol_poly):
+            if intersects or room.polygon.contains(symbol_bbox):
                 room_matches.append(room)
 
         
@@ -88,21 +76,24 @@ class YOLOProcessor:
             boxes = result.boxes.xyxy.cpu().numpy()  # [x1, y1, x2, y2]
             classes = result.boxes.cls.cpu().numpy()  # Class IDs
             names = result.names  # Class ID to name mapping
-                        
-            for i in range(len(boxes)):
-                x1, y1, x2, y2 = map(int, boxes[i])
-                class_id = int(classes[i])
+
+            # todo enumerate zip
+            for box, clazz in zip(boxes, classes):
+
+                bbox = geom.box(*box)
+
+                class_id = int(clazz)
                 class_name = names[class_id]
                 
                 total_detections += 1
                 
                 # Create symbol from detection
                 symbol = self.create_symbol_from_detection(
-                    class_name, [x1, y1, x2, y2]
+                    class_name, bbox
                 )
                 
               # Find applicable rooms using intersection-based matching
-                applicable_rooms = self.find_rooms_for_symbol([x1, y1, x2, y2], intersection_threshold)
+                applicable_rooms = self.find_rooms_for_symbol(bbox, intersection_threshold)
                                 
                 if applicable_rooms:
                     symbols_assigned += 1
