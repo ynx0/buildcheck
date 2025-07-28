@@ -404,8 +404,8 @@ def test_separate_analysis(image_path: str, model_path: str):
     print("Initializing OCR processor...")
     ocr_processor = OCRProcessor(image_path, layout)
     
-    # print("Running OCR analysis...")
-    # ocr_processor.ocrProcess()
+    print("Running OCR analysis...")
+    ocr_processor.ocrProcess()
     
     print("Initializing YOLO processor...")
     yolo_processor = YOLOProcessor(image_path, model_path, layout)
