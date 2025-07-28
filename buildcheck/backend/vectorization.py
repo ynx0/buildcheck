@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum, auto
+from enum import Enum
 from typing import Union
 from shapely.geometry import Polygon
 
@@ -66,6 +66,15 @@ class Room:
         """
         polygon = Polygon([(x, y) for x, y in junctions])
         return cls(polygon)
+
+    @property
+    def name(self) -> str:
+        name = ""
+        for data in self.metadata:
+            if isinstance(data, Label):
+                name += data.text
+        return name
+
 
     def __repr__(self):
         return (

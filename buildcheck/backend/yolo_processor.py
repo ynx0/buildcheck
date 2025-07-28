@@ -1,13 +1,11 @@
 from ultralytics import YOLO
-import cv2
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from .vectorization import *
-import shapely
+from buildcheck.backend.vectorization import *
 import shapely.geometry as geom
 from shapely.geometry import Polygon
 import numpy as np
 from PIL import Image
+
+
 
 
 YOLO_MODEL_PATH = "buildcheck/backend/best.pt"
@@ -53,7 +51,7 @@ class YOLOProcessor:
             # Returns True if symbol and room overlap at all
             intersects = room.polygon.intersects(symbol_bbox)
             # Check if intersection meets threshold
-            if intersects:
+            if intersects or room.polygon.contains(symbol_bbox):
                 room_matches.append(room)
 
         
@@ -87,8 +85,7 @@ class YOLOProcessor:
             # todo enumerate zip
             for box, clazz in zip(boxes, classes):
 
-                bbox_rounded = list(map(round, box))
-                bbox = geom.box(*bbox_rounded)
+                bbox = geom.box(*box)
 
                 class_id = int(clazz)
                 class_name = names[class_id]
@@ -141,7 +138,7 @@ class YOLOProcessor:
 def test_yolo_processor(image_path: str, model_path: str):
 
     # Import the test layout creation function from OCR processor
-    from .ocr_processor import create_test_layout
+    from ocr_processor import create_test_layout
     
     # Create test layout
     layout = create_test_layout()

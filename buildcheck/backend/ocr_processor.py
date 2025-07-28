@@ -1,7 +1,6 @@
 import easyocr
 import cv2
-import matplotlib.pyplot as plt
-from .vectorization import *
+from buildcheck.backend.vectorization import *
 import re
 import shapely
 from PIL import Image
