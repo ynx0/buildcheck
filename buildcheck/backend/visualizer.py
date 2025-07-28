@@ -16,7 +16,7 @@ class Visualizer:
             Category.WINDOW: 'blue', 
             Category.WALL: 'brown',
             Category.COLUMN: 'gray',
-            Category.STAIRS: 'purple',
+            Category.STAIR_CASE: 'purple',
             Category.RAILING: 'orange'
         }
         
