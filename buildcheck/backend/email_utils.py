@@ -4,6 +4,7 @@ import resend  # Resend email service to send emails
 from datetime import datetime, timezone  # To work with timezone aware datetimes
 import base64  # For encoding attachments
 from buildcheck.backend.supabase_client import supabase_client as supabase
+from enum import Enum
 
 # Load environment variables from a .env file (for sensitive info like API keys)
 load_dotenv()
@@ -11,7 +12,17 @@ load_dotenv()
 # Set the Resend API key (used for sending emails)
 resend.api_key = os.getenv("RESEND_API_KEY")
 
-def send_email(user_email, user_name, status, message):
+
+# for some reason we have a fixed set of titles we can insert as.
+# we list them here
+
+# i think we should remove this since titles should be generic
+class Titles(Enum):
+    REVIEW_COMPLETED = "Review completed"
+    SUBMISSION_RECIEVED = "Submission received"
+    UNDER_REVIEW = "Under Review"
+
+def send_email(user_email, user_name, status, message, approval=False):
     """
     Sends an email to the user with their approval or rejection status.
     If status is approved, it attaches ApprovalLetter.pdf to the email.
