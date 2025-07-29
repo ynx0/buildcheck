@@ -8,6 +8,9 @@ from buildcheck.backend.supabase_client import supabase_client
 import buildcheck.backend.email_utils as em
 import traceback
 from enum import Enum
+from buildcheck.backend.validation import run_validation_employee
+import asyncio
+from typing import Optional
 
 
 class Status(Enum):
@@ -20,20 +23,13 @@ class AIValidationState(rx.State):
     violations: list[int] = []
     guidelines: list[dict] = []
     case_data: list[dict] = []
-    case_id: str = ""
+    case_id: int
     listOfCases: list[str] = []
     comments: dict = {}
+    is_validating: bool = False
 
     def get_case_submitterid(self):
-        sid_query = (
-            supabase_client.table("cases")
-            .select("submitter_id")
-            .eq("id", self.case_id)
-            .single()
-            .execute()
-        )
-        print(f"{sid_query}")
-        return sid_query.data['submitter_id']
+        return self.current_case_data['submitter_id']
 
 
     def handle_verdict(self, title, message, approved):
@@ -80,9 +76,9 @@ class AIValidationState(rx.State):
 
 
     def update_current_case(self, case):
-        print(f'{case=}')
-        self.case_id = str(case["id"])
-        print(f"loading case {self.case_id=}")
+        # print(f'{case=}')
+        self.case_id = case["id"]
+        # print(f"loading case {self.case_id=}")
         violations_query = supabase_client.table("violations").select("guideline_code").eq("case_id", self.case_id).execute()
 
         self.violations = [row["guideline_code"] for row in violations_query.data]
@@ -114,7 +110,7 @@ class AIValidationState(rx.State):
 
     @rx.event
     def change_case(self, value: str):
-        self.case_id = value
+        self.case_id = int(value)
 
         try:
             current_case = (
@@ -135,6 +131,24 @@ class AIValidationState(rx.State):
         except Exception as e:
             print("Exception in load current case:", e)
             traceback.print_exc()
+
+
+    @rx.event
+    async def on_validate(self):
+        self.is_validating = True
+        await asyncio.sleep(1.5)
+
+        # run validation
+        print(self.current_case_data)
+
+        failures = run_validation_employee(
+            self.current_case_data['blueprint_path'],
+            self.current_case_data['submitter_id']
+        )
+        print(f'{failures=}')
+        self.is_validating = False
+        yield rx.toast.info("AI Validation ran successfully")
+
 
 
     # @rx.event
@@ -169,9 +183,24 @@ class AIValidationState(rx.State):
         return violated
     
 
+    @rx.var
+    def current_case_data(self) -> Optional[dict]:
+        # for case in self.case_data:
+        #     print(f'{case['id']=}')
+
+        filt = list(filter(lambda case: self.case_id == case['id'], self.case_data))
+        filt = filt[0] if filt else None
+        return filt
+
+
+    @rx.var
+    def case_id_str(self) -> str:
+        return str(self.case_id)
+
+
 def guideline_status(guideline: str) -> rx.Component:
     return rx.cond(AIValidationState.violations.contains(guideline), status_tag("rejected"), status_tag("approved")) 
-    
+
 @rx.page('/validation', on_load=AIValidationState.load_data)
 def validation_page() -> rx.Component:
     return rx.vstack(
@@ -180,7 +209,7 @@ def validation_page() -> rx.Component:
                 rx.text("Blueprint ID:", font_weight="bold"),
                 rx.select(
                     AIValidationState.listOfCases,
-                    value=AIValidationState.case_id,
+                    value=AIValidationState.case_id_str,
                     on_change=AIValidationState.change_case,
                     width="200px"
                 ),
@@ -193,6 +222,13 @@ def validation_page() -> rx.Component:
                     "Reject",
                     color_scheme="red",
                     on_click=AIValidationState.on_reject
+                ),
+                rx.spacer(),
+                rx.button(
+                    "Run AI Validation",
+                    color_scheme="orange",
+                    on_click=AIValidationState.on_validate,
+                    loading=AIValidationState.is_validating
                 ),
                 margin="15px"
             ),
