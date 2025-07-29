@@ -11,6 +11,7 @@ from enum import Enum
 from buildcheck.backend.validation import run_validation_employee
 import asyncio
 from typing import Optional
+from buildcheck.backend.validation import Failure
 
 
 class Status(Enum):
@@ -28,14 +29,51 @@ class AIValidationState(rx.State):
     comments: dict = {}
     is_validating: bool = False
 
-    def get_case_submitterid(self):
-        return self.current_case_data['submitter_id']
+
+    def write_violations(self, failures: list[Failure]):
+        print(f'{failures=}')
+        failure_codes = list(map(lambda f: f.guideline.value, failures))
+
+        # we need to overwrite all previous violations,
+        # to prevent stale violations
+
+        # unfortunately supabase-py does not support atomic transactions
+
+
+        # delete all current violations for this case
+        dres = (supabase_client.table("violations")
+            .delete()
+            .eq("case_id", self.case_id)
+            .execute()
+        )
+        print(dres)
+
+        resp = (supabase_client.table("violations")
+            .select("*")
+            .eq("case_id", self.case_id)
+            .execute()
+        )
+        print(f"{resp.data}")
+
+
+        # insert all the violations for current case
+        (supabase_client.table("violations")
+            .insert([
+                {
+                    "case_id": self.case_id,
+                    "guideline_code": code
+                } for code in failure_codes
+            ])
+            .execute()
+        )
+
+        self.violations = failure_codes
 
 
     def handle_verdict(self, title, message, approved):
 
         # notify the employee
-        submitter_id = self.get_case_submitterid()
+        submitter_id = self.current_case_data['submitter_id']
         em.insert_notification(submitter_id, title, message)
 
         # email the employee
@@ -136,6 +174,7 @@ class AIValidationState(rx.State):
     @rx.event
     async def on_validate(self):
         self.is_validating = True
+        yield None
         await asyncio.sleep(1.5)
 
         # run validation
@@ -145,7 +184,10 @@ class AIValidationState(rx.State):
             self.current_case_data['blueprint_path'],
             self.current_case_data['submitter_id']
         )
-        print(f'{failures=}')
+        self.write_violations(failures)
+
+        # TODO call visualizer code here to generate image
+
         self.is_validating = False
         yield rx.toast.info("AI Validation ran successfully")
 
