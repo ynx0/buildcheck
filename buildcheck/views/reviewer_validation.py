@@ -264,6 +264,27 @@ class AIValidationState(rx.State):
         return str(self.case_id)
 
 
+    @rx.var
+    def visualization_path(self) -> Optional[str]:
+        if not self.current_case_data:
+            return None
+
+        bp_name = self.current_case_data['blueprint_path']
+        bp_submitter = self.current_case_data['submitter_id']
+        vis_output = bp_name2vispath(bp_name, bp_submitter)
+
+        if vis_output.exists:
+            s = str(vis_output)
+            print(f"{vis_output=} {s=}")
+            return '/' + s
+        else:
+            return None
+
+
+
+
+
+
 def guideline_status(guideline: str) -> rx.Component:
     return rx.cond(AIValidationState.violations.contains(guideline), status_tag("rejected"), status_tag("approved")) 
 
