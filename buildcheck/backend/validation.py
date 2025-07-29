@@ -38,14 +38,10 @@ def run_validation(file_name: str, employee_id: int) -> list[Failure]:
     failures = validate_ajyal(layout)
     image_path = bp_name2path(file_name, employee_id)
     output_path = image_path.with_name(image_path.stem + "_output.png")
-    visualizer = FloorPlanVisualizer(bp_name2path(file_name, employee_id), layout)
+    visualizer = FloorPlanVisualizer(image_path, layout)
     visualizer.visualize(str(output_path))
 
     return failures
-
-
-def run_validation_employee(file_name: str, employee_id: int) -> list[Failure]:
-    return run_validation(file_name, bp_name2image(file_name, employee_id))
 
 if __name__ == '__main__':
     # assuming we have `uploaded_files/user_2/2d-floor-plan.jpg` exists
