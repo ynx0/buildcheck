@@ -193,6 +193,20 @@ class AIValidationState(rx.State):
 
 
 
+    @rx.event
+    def on_violation_delete(self, guideline_id: int):
+
+        (supabase_client.table("violations")
+            .delete()
+            .eq("case_id", self.case_id)
+            .eq("guideline_code", guideline_id)
+            .execute()
+        )
+
+        self.violations = list(filter(lambda v: v != guideline_id, self.violations))
+
+        return rx.toast.success("Removed violation")
+
     # @rx.event
     # def handle_comments(self, form_data: dict):
     #     # Store the comment locally
@@ -318,7 +332,11 @@ def validation_page() -> rx.Component:
                                         # rx.table.cell(guideline_status(item["id"])),
                                         rx.table.cell(item["category"]),
                                         # TODO this button should delete
-                                        rx.table.cell(rx.button("Delete", color_scheme="red"))
+                                        rx.table.cell(rx.button(
+                                            "Delete",
+                                            color_scheme="red",
+                                            on_click=AIValidationState.on_violation_delete(item['id'])
+                                        ))
                                     )
                                 )
                             ),
