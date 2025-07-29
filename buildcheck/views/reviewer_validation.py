@@ -8,11 +8,11 @@ from buildcheck.backend.supabase_client import supabase_client
 import buildcheck.backend.email_utils as em
 import traceback
 from enum import Enum
-from buildcheck.backend.validation import run_validation_employee
+from buildcheck.backend.validation import run_validation
 import asyncio
 from typing import Optional
 from buildcheck.backend.validation import Failure
-
+from buildcheck.backend.blueprints import bp_name2vispath
 
 class Status(Enum):
     PENDING = "pending"
@@ -190,7 +190,7 @@ class AIValidationState(rx.State):
         # run validation
         print(self.current_case_data)
 
-        failures = run_validation_employee(
+        failures = run_validation(
             self.current_case_data['blueprint_path'],
             self.current_case_data['submitter_id']
         )
@@ -288,6 +288,76 @@ class AIValidationState(rx.State):
 def guideline_status(guideline: str) -> rx.Component:
     return rx.cond(AIValidationState.violations.contains(guideline), status_tag("rejected"), status_tag("approved")) 
 
+
+def compliance_card() -> rx.Component:
+    return rx.card(
+        rx.vstack(
+            rx.heading("Detailed Compliance Report", size="5"),
+            rx.hstack(
+                rx.input(
+                rx.input.slot(
+                    rx.icon(tag="search"),
+                ),
+                placeholder="Search compliance items...",
+                width="400px"
+                ),
+                rx.button(rx.icon(tag="list-filter"), "Status")
+            ),
+            rx.cond(
+                ~AIValidationState.violated_guidelines,
+                rx.text('No violations to display.', font_weight="bold", size="5"),
+                rx.table.root(
+                    rx.table.header(
+                        rx.table.row(
+                            rx.table.column_header_cell("ID"),
+                            rx.table.column_header_cell("Title"),
+                            rx.table.column_header_cell("Rule Description"),
+                            # rx.table.column_header_cell("Status"),
+                            rx.table.column_header_cell("Category"),
+                            rx.table.column_header_cell("Actions"),
+                        )
+                    ),
+                    rx.table.body(
+                        rx.foreach(
+                            AIValidationState.violated_guidelines,
+                            lambda item: rx.table.row(
+                                rx.table.cell(item["id"]),
+                                rx.table.cell(item["title"]),
+                                rx.table.cell(item["description"]),
+                                # rx.table.cell(guideline_status(item["id"])),
+                                rx.table.cell(item["category"]),
+                                # TODO this button should delete
+                                rx.table.cell(rx.button(
+                                    "Delete",
+                                    color_scheme="red",
+                                    on_click=AIValidationState.on_violation_delete(item['id'])
+                                ))
+                            )
+                        )
+                    ),
+                ),
+            ),
+
+            rx.heading("Add Comments", size="4"),
+            rx.form.root(
+            rx.hstack(
+                rx.input(
+                    name="input",
+                    placeholder="Enter text...",
+                    type="text",
+                    required=True,
+                    size="3",
+                    width="70%",
+                ),
+                rx.button("Add", type="submit"),
+                width="100%",
+            ),
+            reset_on_submit=True
+            ),
+        )
+    )
+
+
 @rx.page('/validation', on_load=AIValidationState.load_data)
 def validation_page() -> rx.Component:
     return rx.vstack(
@@ -326,71 +396,21 @@ def validation_page() -> rx.Component:
                 stat_card("Pending Reviews", AIValidationState.listOfCases.length(), "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
             margin_bottom="2em",
             ),
-            rx.heading("Detailed Compliance Report", size="5"),
-            rx.card(
-                rx.vstack(
-                    rx.hstack(
-                        rx.input(
-                        rx.input.slot(
-                            rx.icon(tag="search"),
-                        ),
-                        placeholder="Search compliance items...",
-                        width="400px"
-                        ),
-                        rx.button(rx.icon(tag="list-filter"), "Status")
-                    ),
+            rx.hstack(
+                rx.box(
                     rx.cond(
-                        ~AIValidationState.violated_guidelines,
-                        rx.text('No violations to display.', font_weight="bold", size="5"),
-                        rx.table.root(
-                            rx.table.header(
-                                rx.table.row(
-                                    rx.table.column_header_cell("ID"),
-                                    rx.table.column_header_cell("Title"),
-                                    rx.table.column_header_cell("Rule Description"),
-                                    # rx.table.column_header_cell("Status"),
-                                    rx.table.column_header_cell("Category"),
-                                    rx.table.column_header_cell("Actions"),
-                                )
-                            ),
-                            rx.table.body(
-                                rx.foreach(
-                                    AIValidationState.violated_guidelines,
-                                    lambda item: rx.table.row(
-                                        rx.table.cell(item["id"]),
-                                        rx.table.cell(item["title"]),
-                                        rx.table.cell(item["description"]),
-                                        # rx.table.cell(guideline_status(item["id"])),
-                                        rx.table.cell(item["category"]),
-                                        # TODO this button should delete
-                                        rx.table.cell(rx.button(
-                                            "Delete",
-                                            color_scheme="red",
-                                            on_click=AIValidationState.on_violation_delete(item['id'])
-                                        ))
-                                    )
-                                )
-                            ),
-                        ),
+                        AIValidationState.visualization_path is not None,
+                        rx.image(src=AIValidationState.visualization_path, width="100%", height="auto", object_fit="contain"),
+                        rx.box(),  # Empty box to preserve space
                     ),
-
-                    rx.heading("Add Comments", size="4"),
-                    rx.form.root(
-                    rx.hstack(
-                        rx.input(
-                            name="input",
-                            placeholder="Enter text...",
-                            type="text",
-                            required=True,
-                            size="3",
-                            width="70%",
-                        ),
-                        rx.button("Add", type="submit"),
-                        width="100%",
-                    ),
-                    reset_on_submit=True
-                    ),
+                    width="50%",  # or adjust as needed
+                    height="100%",
+                    bg="gray.50",  # optional placeholder background
                 ),
+                compliance_card(),
+                width="100%",
+                spacing="1",  # no gap between panes
+                align="stretch", # match both sides in height
             ),
             width="100%",
             spacing="6",
