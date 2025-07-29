@@ -171,7 +171,7 @@ class AIValidationState(rx.State):
         if len(self.guidelines) == 0:
             score =  0.0
         else:
-            score = (len(self.guidelines)- len(self.violations)) / len(self.guidelines) 
+            score = (len(self.guidelines)- len(set(self.violations))) / len(self.guidelines)
         return f"{score * 100:.0f}%"
 
 
