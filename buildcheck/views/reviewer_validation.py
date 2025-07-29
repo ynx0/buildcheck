@@ -20,6 +20,10 @@ class Status(Enum):
     REJECTED = "rejected"
 
 
+class AIDecision(Enum):
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
 class AIValidationState(rx.State):
     violations: list[int] = []
     guidelines: list[dict] = []
@@ -41,19 +45,17 @@ class AIValidationState(rx.State):
 
 
         # delete all current violations for this case
-        dres = (supabase_client.table("violations")
+        (supabase_client.table("violations")
             .delete()
             .eq("case_id", self.case_id)
             .execute()
         )
-        print(dres)
 
-        resp = (supabase_client.table("violations")
+        (supabase_client.table("violations")
             .select("*")
             .eq("case_id", self.case_id)
             .execute()
         )
-        print(f"{resp.data}")
 
 
         # insert all the violations for current case
@@ -64,6 +66,14 @@ class AIValidationState(rx.State):
                     "guideline_code": code
                 } for code in failure_codes
             ])
+            .execute()
+        )
+
+        # update the cases ai_descision
+        ai_decision = AIDecision.REJECTED.value if failures else AIDecision.APPROVED.value
+        (supabase_client.table("cases")
+            .update({"ai_decision": ai_decision})
+            .eq("id", self.case_id)
             .execute()
         )
 
