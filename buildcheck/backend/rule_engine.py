@@ -9,8 +9,8 @@ from shapely import Point
 
 # This MUST be kept up to date with the `guidelines` table at all times
 class Guidelines(Enum):
-	ROOMS_HAVE_DOOR = 1
-	LAYOUT_HAS_ROOM = 2
+	LAYOUT_HAS_ROOM = 1
+	ROOMS_HAVE_DOOR = 2
 
 
 
