@@ -310,7 +310,7 @@ def validation_page() -> rx.Component:
                     ),
                     rx.cond(
                         ~AIValidationState.violated_guidelines,
-                        rx.text('No violations', font_weight="bold", size="5", color_scheme="green"),
+                        rx.text('No violations to display.', font_weight="bold", size="5"),
                         rx.table.root(
                             rx.table.header(
                                 rx.table.row(
