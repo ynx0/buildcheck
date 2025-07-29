@@ -31,6 +31,8 @@ def run_validation(file_name: str, employee_id: int) -> list[Failure]:
     # run OCR on the layout
     processor_ocr = OCRProcessor(image, layout)
     processor_ocr.ocrProcess()
+    for room in layout.rooms:
+        print(f"\n{room.name}")
 
     # run rules checking engine on layout
     failures = validate_ajyal(layout)

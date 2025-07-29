@@ -72,7 +72,7 @@ class Room:
         name = ""
         for data in self.metadata:
             if isinstance(data, Label):
-                name += data.text
+                name += " " + data.text
         return name
 
 
