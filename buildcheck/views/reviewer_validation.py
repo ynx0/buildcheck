@@ -5,38 +5,137 @@ from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
 from buildcheck.state.user_state import UserState
 from buildcheck.backend.supabase_client import supabase_client
+import buildcheck.backend.email_utils as em
 import traceback
+from enum import Enum
+
+
+class Status(Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
 
 class AIValidationState(rx.State):
-    violations: list[str] = []
+    violations: list[int] = []
     guidelines: list[dict] = []
     case_data: list[dict] = []
-    case_result: str = "No cases assigned"  # Default case result status
     case_id: str = ""
     listOfCases: list[str] = []
     comments: dict = {}
+
+    def get_case_submitterid(self):
+        sid_query = (
+            supabase_client.table("cases")
+            .select("submitter_id")
+            .eq("id", self.case_id)
+            .single()
+            .execute()
+        )
+        print(f"{sid_query}")
+        return sid_query.data['submitter_id']
+
+
+    def handle_verdict(self, title, message, approved):
+
+        # notify the employee
+        submitter_id = self.get_case_submitterid()
+        em.insert_notification(submitter_id, title, message)
+
+        # email the employee
+        employee_query = supabase_client.table("users").select("id, name, email").eq("id", submitter_id).limit(1).single().execute()
+        employee = employee_query.data
+
+        em.send_email(employee["email"], employee["name"], title, message, approved)
+
+        # update case status in db
+        status = Status.APPROVED.value if approved else Status.REJECTED.value
+        resp = (
+            supabase_client.table("cases")
+            .update({"status": status})
+            .eq("id", self.case_id)
+            .execute()
+        )
+
+
+    @rx.event
+    async def on_approve(self):
+
+        self.handle_verdict("Blueprint Approved", "Your blueprint has been approved.", True)
+
+        # display toast and redirect
+        yield rx.toast.success("Blueprint approved!")
+        yield rx.redirect("/assignments")
+
+
+    @rx.event
+    async def on_reject(self):
+
+        self.handle_verdict("Blueprint Rejected", "Your blueprint has been rejected.", False)
+
+        # display toast and redirect
+        yield rx.toast.info("Blueprint rejected!")
+        yield rx.redirect("/assignments")
+
+
+
+    def update_current_case(self, case):
+        print(f'{case=}')
+        self.case_id = str(case["id"])
+        print(f"loading case {self.case_id=}")
+        violations_query = supabase_client.table("violations").select("guideline_code").eq("case_id", self.case_id).execute()
+
+        self.violations = [row["guideline_code"] for row in violations_query.data]
+
 
     @rx.event
     async def load_data(self):
         # Loads the case data for the current user from the database
         try:
             user_state = await self.get_state(UserState)
-            response1 = supabase_client.table("cases").select("*").eq("reviewer_id", user_state.user_id).execute()
-            if response1.data:
-                self.case_id = str(response1.data[0]["id"])
-                self.case_data = response1.data
-                self.listOfCases = [str(case["id"]) for case in self.case_data]
-                response2 = supabase_client.table("violations").select("guideline_code").eq("case_id", self.case_id).execute()
-                self.violations = [row["guideline_code"] for row in response2.data]
-                response3 = supabase_client.table("guidelines").select("*").execute() 
-                self.guidelines = response3.data
+            all_cases = (
+                supabase_client.table("cases")
+                .select("*")
+                .eq("reviewer_id", user_state.user_id)
+                .execute()
+            )
+
+            self.update_current_case(all_cases.data[0])
+
+            self.case_data = all_cases.data
+            self.listOfCases = [str(case["id"]) for case in self.case_data]
+
+            guidelines_query = supabase_client.table("guidelines").select("*").execute()
+            self.guidelines = guidelines_query.data
+
         except Exception as e:
             print("Exception in load_data:", e)
-            traceback.print_exc() 
+            traceback.print_exc()
 
     @rx.event
     def change_case(self, value: str):
         self.case_id = value
+
+        try:
+            current_case = (
+                supabase_client.table("cases")
+                .select("*")
+                .eq("id", self.case_id)
+                .limit(1)
+                .single()
+                .execute()
+            )
+
+            self.update_current_case(current_case.data)
+
+
+
+
+
+        except Exception as e:
+            print("Exception in load current case:", e)
+            traceback.print_exc()
+
 
     # @rx.event
     # def handle_comments(self, form_data: dict):
@@ -60,6 +159,14 @@ class AIValidationState(rx.State):
         else:
             score = (len(self.guidelines)- len(self.violations)) / len(self.guidelines) 
         return f"{score * 100:.0f}%"
+
+
+    @rx.var
+    def violated_guidelines(self) -> list[dict]:
+        # filter guidelines to be only those whose id is in the violated ids
+        violated = list(filter(lambda g: g['id'] in self.violations, self.guidelines))
+        print(f'{violated=}')
+        return violated
     
 
 def guideline_status(guideline: str) -> rx.Component:
@@ -80,15 +187,12 @@ def validation_page() -> rx.Component:
                 rx.button(
                     "Approve",
                     color_scheme="blue",
-                    on_click=lambda: [
-                        rx.toast.success("Blueprint approved!"),
-                        rx.redirect("/assignments")
-                    ]
+                    on_click=AIValidationState.on_approve
                 ),
                 rx.button(
                     "Reject",
                     color_scheme="red",
-                    on_click=lambda: [rx.toast.error("Blueprint rejected!"), rx.redirect("/assignments")]
+                    on_click=AIValidationState.on_reject
                 ),
                 margin="15px"
             ),
@@ -112,32 +216,37 @@ def validation_page() -> rx.Component:
                         ),
                         rx.button(rx.icon(tag="list-filter"), "Status")
                     ),
-                    rx.hstack(),
-                    rx.table.root(
-                        rx.table.header(
-                            rx.table.row(
-                                rx.table.column_header_cell("ID"),
-                                rx.table.column_header_cell("Title"),
-                                rx.table.column_header_cell("Rule Description"),
-                                rx.table.column_header_cell("Status"),
-                                rx.table.column_header_cell("Category"),
-                                rx.table.column_header_cell("Actions"),
-                            ) 
-                        ),
-                        rx.table.body(
-                            rx.foreach(
-                                AIValidationState.guidelines,
-                                lambda item: rx.table.row(
-                                    rx.table.cell(item["code"]),
-                                    rx.table.cell(item["title"]),
-                                    rx.table.cell(item["description"]),
-                                    rx.table.cell(guideline_status(item["code"])),
-                                    rx.table.cell(item["category"]),
-                                    rx.table.cell(rx.button("Delete", color_scheme="red"))
+                    rx.cond(
+                        ~AIValidationState.violated_guidelines,
+                        rx.text('No violations', font_weight="bold", size="5", color_scheme="green"),
+                        rx.table.root(
+                            rx.table.header(
+                                rx.table.row(
+                                    rx.table.column_header_cell("ID"),
+                                    rx.table.column_header_cell("Title"),
+                                    rx.table.column_header_cell("Rule Description"),
+                                    # rx.table.column_header_cell("Status"),
+                                    rx.table.column_header_cell("Category"),
+                                    rx.table.column_header_cell("Actions"),
                                 )
-                            )
+                            ),
+                            rx.table.body(
+                                rx.foreach(
+                                    AIValidationState.violated_guidelines,
+                                    lambda item: rx.table.row(
+                                        rx.table.cell(item["id"]),
+                                        rx.table.cell(item["title"]),
+                                        rx.table.cell(item["description"]),
+                                        # rx.table.cell(guideline_status(item["id"])),
+                                        rx.table.cell(item["category"]),
+                                        # TODO this button should delete
+                                        rx.table.cell(rx.button("Delete", color_scheme="red"))
+                                    )
+                                )
+                            ),
                         ),
                     ),
+
                     rx.heading("Add Comments", size="4"),
                     rx.form.root(
                     rx.hstack(

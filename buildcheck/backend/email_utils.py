@@ -18,18 +18,17 @@ class Titles(Enum):
     SUBMISSION_RECIEVED = "Submission received"
     UNDER_REVIEW = "Under Review"
 
-def send_email(user_email, user_name, status, message, approval=False):
+def send_email(user_email, user_name, title, message, approval = False):
     """
     Sends an email to the user with their approval or rejection status.
     If status is approved, it attaches ApprovalLetter.pdf to the email.
     """
-    subject = f"Notification: {status}"  # Email subject
+    subject = f"Notification: {title}"
     # Email body as HTML
     html_content = f"""
     <div>
         <h2>ARCH System Notification</h2>
         <p><strong>User:</strong> {user_name} ({user_email})</p>
-        <p><strong>Status:</strong> {status.upper()}</p>
         <p>{message}</p>
     </div>
     """
@@ -38,8 +37,7 @@ def send_email(user_email, user_name, status, message, approval=False):
 
     email_payload = {
         "from": "ARCH System <onboarding@resend.dev>",  # Sender email
-        # TODO change back to archsystemksa@gmail.com
-        "to": [f"yaseen.nvt@gmail.com"],  # Recipient(s) (Arch team only for the time being)
+        "to": [f"archsystemksa@gmail.com"],  # Recipient(s) (Arch team only for the time being)
         "subject": subject,
         "html": html_content,
     }
@@ -116,5 +114,5 @@ def notify_all(title, message, case_id):
 
 if __name__ == '__main__':
     # notify_all(Titles.REVIEW_COMPLETED.value, "The thing worked.", 2)
-    send_email("omar@aramco.com", "omar123", "approved yay", "everything is great", approval=True)
+    send_email("omar@aramco.com", "omar123", "everything is great", approval=True)
 
