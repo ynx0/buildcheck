@@ -70,6 +70,9 @@ def vectorize(img: Image) -> list[Room]:
 		print(e)
 		raise Exception("error calling vectorize. check if runpod container is running")
 
+	# TODO we need to experiment and handle what happens when r2g fails
+	# right now rooms is just null
+
 	# extract rooms from payload
 	rooms_raw = payload["rooms"]
 	scale_factor = payload["scale_factor"]
