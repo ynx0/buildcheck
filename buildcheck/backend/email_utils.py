@@ -37,8 +37,7 @@ def send_email(user_email, user_name, title, message, approval = False):
 
     email_payload = {
         "from": "ARCH System <onboarding@resend.dev>",  # Sender email
-        # TODO change back to archsystemksa@gmail.com
-        "to": [f"yaseen.nvt@gmail.com"],  # Recipient(s) (Arch team only for the time being)
+        "to": [f"archsystemksa@gmail.com"],  # Recipient(s) (Arch team only for the time being)
         "subject": subject,
         "html": html_content,
     }
