@@ -8,7 +8,7 @@ from buildcheck.backend.supabase_client import supabase_client
 import buildcheck.backend.email_utils as em
 import traceback
 from enum import Enum
-from buildcheck.backend.validation import run_validation_employee
+from buildcheck.backend.validation import run_validation
 import asyncio
 from typing import Optional
 from buildcheck.backend.validation import Failure
@@ -190,7 +190,7 @@ class AIValidationState(rx.State):
         # run validation
         print(self.current_case_data)
 
-        failures = run_validation_employee(
+        failures = run_validation(
             self.current_case_data['blueprint_path'],
             self.current_case_data['submitter_id']
         )
