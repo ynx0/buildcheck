@@ -191,10 +191,17 @@ class AIValidationState(rx.State):
         # run validation
         print(self.current_case_data)
 
-        failures = run_validation(
-            self.current_case_data['blueprint_path'],
-            self.current_case_data['submitter_id']
-        )
+        try:
+            failures = run_validation(
+                self.current_case_data['blueprint_path'],
+                self.current_case_data['submitter_id']
+            )
+        except FileNotFoundError as e:
+            self.is_validating = False
+            yield rx.toast.error('Blueprint file not available')
+            return
+
+
         self.write_violations(failures)
 
         # TODO call visualizer code here to generate image
@@ -266,23 +273,6 @@ class AIValidationState(rx.State):
 
 
 
-    @staticmethod
-    def symlink_uploads_to_assets(path: Path) -> str:
-        src = path.resolve()
-        relative = path.relative_to("uploaded_files")
-        dst = Path("assets") / relative
-
-        try:
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            if dst.exists() or dst.is_symlink():
-                dst.unlink()
-            dst.symlink_to(src)
-        except OSError as e:
-            print(f"Failed to symlink {src} → {dst}: {e}")
-
-        return f"/{relative.as_posix()}"
-
-
     @rx.var
     def visualization_path(self) -> Optional[str]:
 
@@ -295,7 +285,9 @@ class AIValidationState(rx.State):
         vis_output = bp_name2vispath(bp_name, bp_submitter)
 
         if vis_output.exists():
-            return self.symlink_uploads_to_assets(vis_output)
+            vis_output = Path(*vis_output.parts[1:])
+            print(f"{vis_output}")
+            return str(vis_output)
         else:
             return None
 
@@ -419,7 +411,7 @@ def validation_page() -> rx.Component:
                 rx.box(
                     rx.cond(
                         AIValidationState.visualization_path is not None,
-                        rx.image(src=AIValidationState.visualization_path, width="100%", height="auto", object_fit="contain"),
+                        rx.image(src=rx.get_upload_url(AIValidationState.visualization_path), width="100%", height="auto", object_fit="contain"),
                         rx.box(),  # Empty box to preserve space
                     ),
                     width="50%",  # or adjust as needed
