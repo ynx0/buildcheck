@@ -13,6 +13,7 @@ import asyncio
 from typing import Optional
 from buildcheck.backend.validation import Failure
 from buildcheck.backend.blueprints import bp_name2vispath
+from pathlib import Path
 
 class Status(Enum):
     PENDING = "pending"
@@ -264,8 +265,28 @@ class AIValidationState(rx.State):
         return str(self.case_id)
 
 
+
+    @staticmethod
+    def symlink_uploads_to_assets(path: Path) -> str:
+        src = path.resolve()
+        relative = path.relative_to("uploaded_files")
+        dst = Path("assets") / relative
+
+        try:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if dst.exists() or dst.is_symlink():
+                dst.unlink()
+            dst.symlink_to(src)
+        except OSError as e:
+            print(f"Failed to symlink {src} → {dst}: {e}")
+
+        return f"/{relative.as_posix()}"
+
+
     @rx.var
     def visualization_path(self) -> Optional[str]:
+
+        # N.B! This approach exposes blueprints publicly via assets.
         if not self.current_case_data:
             return None
 
@@ -273,10 +294,8 @@ class AIValidationState(rx.State):
         bp_submitter = self.current_case_data['submitter_id']
         vis_output = bp_name2vispath(bp_name, bp_submitter)
 
-        if vis_output.exists:
-            s = str(vis_output)
-            print(f"{vis_output=} {s=}")
-            return '/' + s
+        if vis_output.exists():
+            return self.symlink_uploads_to_assets(vis_output)
         else:
             return None
 
@@ -409,7 +428,7 @@ def validation_page() -> rx.Component:
                 ),
                 compliance_card(),
                 width="100%",
-                spacing="1",  # no gap between panes
+                spacing="3",  # no gap between panes
                 align="stretch", # match both sides in height
             ),
             width="100%",
