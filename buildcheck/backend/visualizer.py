@@ -9,7 +9,6 @@ from buildcheck.backend.vectorization import *
 class FloorPlanVisualizer:
     def __init__(self, image_path: str, layout: Layout):
         self.image_path = image_path
-        self.model_path = "buildcheck/backend/best.pt"
         self.layout = layout
         self.room_colors = {}
         self.room_names = []
