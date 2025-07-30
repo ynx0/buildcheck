@@ -166,7 +166,7 @@ class AIValidationState(rx.State):
                 all_cases = (
                     supabase_client.table("cases")
                     .select("*")
-                    .eq("submitter_id_id", user_state.user_id)
+                    .eq("submitter_id", user_state.user_id)
                     .execute()
                 )
 
