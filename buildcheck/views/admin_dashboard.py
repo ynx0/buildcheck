@@ -250,7 +250,7 @@ def main_content2() -> rx.Component:
     )
 
 
-# @rx.page(route='/admin-dashboard', on_load=AdminDashState.randomize_successes)
+@rx.page(route='/admin-dashboard', on_load=AdminDashState.randomize_successes)
 def am_dashboard() -> rx.Component:
     return rx.vstack(
         rx.script(src=HTML2CANVAS_PRO_SRC),
