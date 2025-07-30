@@ -3,7 +3,7 @@ import sys
 import requests
 from PIL import Image
 from pathlib import Path
-from .blueprints import bp_name2image
+from .blueprints import bp_name2image, bp_name2r2g
 from dotenv import load_dotenv
 from io import BytesIO
 import base64
@@ -93,7 +93,7 @@ def vectorize(file_name: str, employee_id: int) -> list[Room]:
 		# if r2g worked fine and we have detected rooms
 		# we'll save this json to reuse later
 		with open(r2g_cached, 'w', encoding='utf-8') as f:
-		    json.dump(data, f, ensure_ascii=False, indent=4)
+		    json.dump(payload, f, ensure_ascii=False, indent=4)
 
 		print(f'finished writing to cache {employee_id=} {file_name=}')
 
