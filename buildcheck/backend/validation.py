@@ -37,7 +37,7 @@ def run_validation(file_name: str, employee_id: int) -> list[Failure]:
     # run rules checking engine on layout
     failures = validate_ajyal(layout)
     image_path = bp_name2path(file_name, employee_id)
-    output_path = image_path.with_name(image_path.stem + "_output.png")
+    output_path = bp_name2vispath(file_name, employee_id)
     visualizer = FloorPlanVisualizer(image_path, layout)
     visualizer.visualize(str(output_path))
 
