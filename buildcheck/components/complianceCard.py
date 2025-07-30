@@ -27,20 +27,6 @@ class AIDecision(Enum):
     REJECTED = "rejected"
 
 
-class CaseResult(rx.State):
-
-    case_result: str = ""  # Default case result status
-    @rx.event
-    async def caseResult(self):
-        # Loads the case data for the current user from the database
-        try:
-            user_state = await self.get_state(UserState)
-            response1 = supabase_client.table("cases").select("*").eq("submitter_id", user_state.user_id).single().execute()
-            self.case_id = response1.data["id"]
-            self.case_result = response1.data["status"]
-        except Exception as e:
-            print("Exception in load_caseData:", e)
-            traceback.print_exc() 
 
 class AIValidationState(rx.State):
     violations: list[int] = []
@@ -48,8 +34,9 @@ class AIValidationState(rx.State):
     case_data: list[dict] = []
     case_id: int
     listOfCases: list[str] = []
-    comments: dict = {}
+    comments: list[dict] = []  # Store comments from database
     is_validating: bool = False
+    case_result: str = ""  # Default case result status
 
 
     def write_violations(self, failures: list[Failure]):
@@ -169,6 +156,7 @@ class AIValidationState(rx.State):
                     .eq("submitter_id", user_state.user_id)
                     .execute()
                 )
+                
 
             self.update_current_case(all_cases.data[0])
 
@@ -177,6 +165,7 @@ class AIValidationState(rx.State):
 
             guidelines_query = supabase_client.table("guidelines").select("*").execute()
             self.guidelines = guidelines_query.data
+            self.case_result = self.case_data[0]["status"]
 
         except Exception as e:
             print("Exception in load_data:", e)
@@ -315,6 +304,46 @@ class AIValidationState(rx.State):
             return str(vis_output)
         else:
             return None
+def table() -> rx.Component:
+    return rx.table.root(
+        rx.table.header(
+            rx.table.row(
+                rx.table.column_header_cell("ID"),
+                rx.table.column_header_cell("Title"),
+                rx.table.column_header_cell("Rule Description"),
+                rx.table.column_header_cell("Category"),
+                rx.match(
+                    UserState.role,
+                    ("reviewer", rx.table.column_header_cell("Actions")),
+                    rx.fragment()  # Empty for non-reviewers
+                )
+            )
+        ),
+        rx.table.body(
+            rx.foreach(
+                AIValidationState.violated_guidelines,
+                lambda item: rx.table.row(
+                    rx.table.cell(item["id"]),
+                    rx.table.cell(item["title"]),
+                    rx.table.cell(item["description"]),
+                    rx.table.cell(item["category"]),
+                    rx.match(
+                        UserState.role,
+                        ("reviewer", rx.table.cell(
+                            rx.button(
+                                "Delete",
+                                color_scheme="red",
+                                on_click=AIValidationState.on_violation_delete(item["id"])
+                            )
+                        )),
+                        rx.fragment()  # Empty for non-reviewers
+                    )
+                )
+            )
+        )
+    )
+        
+
     
 
 def compliance_card() -> rx.Component:
@@ -354,50 +383,30 @@ def compliance_card() -> rx.Component:
                         rx.cond(
                             ~AIValidationState.violated_guidelines,
                             rx.text("No violations to display.", font_weight="bold", size="5"),
-                            rx.table.root(
-                                rx.table.header(
-                                    rx.table.row(
-                                        rx.table.column_header_cell("ID"),
-                                        rx.table.column_header_cell("Title"),
-                                        rx.table.column_header_cell("Rule Description"),
-                                        rx.table.column_header_cell("Category"),
-                                        rx.table.column_header_cell("Actions")
-                                    )
-                                ),
-                                rx.table.body(
-                                    rx.foreach(
-                                        AIValidationState.violated_guidelines,
-                                        lambda item: rx.table.row(
-                                            rx.table.cell(item["id"]),
-                                            rx.table.cell(item["title"]),
-                                            rx.table.cell(item["description"]),
-                                            rx.table.cell(item["category"]),
-                                            rx.table.cell(
-                                                rx.button(
-                                                    "Delete",
-                                                    color_scheme="red",
-                                                    on_click=AIValidationState.on_violation_delete(item["id"])
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
-                            )
+                            table()
                         ),
-                        rx.heading("Add Comments", size="4"),
-                        rx.form.root(
-                            rx.hstack(
-                                rx.input(
-                                    name="input",
-                                    placeholder="Enter text...",
-                                    type="text",
-                                    required=True,
-                                    size="3",
-                                    width="70%"
-                                ),
-                                rx.button("Add", type="submit")
-                            ),
-                            reset_on_submit=True
+                        # Replace the comments section inside your table card with this:
+
+                        rx.match(
+                            UserState.role,
+                            ("reviewer", rx.vstack(
+                                rx.heading("Add Comments", size="4"),
+                                rx.form.root(
+                                    rx.hstack(
+                                        rx.input(
+                                            name="input",
+                                            placeholder="Enter text...",
+                                            type="text",
+                                            required=True,
+                                            size="3",
+                                            width="70%"
+                                        ),
+                                        rx.button("Add", type="submit")
+                                    ),
+                                    reset_on_submit=True
+                                )
+                            )),
+                            rx.fragment()  # Empty for non-reviewers
                         )
                     ),
                 

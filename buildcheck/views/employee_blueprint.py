@@ -3,7 +3,7 @@ from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.progress_tracker import progress_tracker, CaseState
 from buildcheck.backend.supabase_client import supabase_client
-from buildcheck.components.complianceCard import compliance_card, CaseResult, AIValidationState
+from buildcheck.components.complianceCard import compliance_card, AIValidationState
 
 def statusOfCase() -> rx.Component:
     # This function returns a UI component that displays the current status of the user's blueprint submission.
@@ -52,7 +52,7 @@ def employee_blueprint() -> rx.Component:
                             rx.hstack(
                             rx.icon(tag="triangle_alert", color="orange", size=20),
                             rx.vstack(
-                                rx.text(f'This blueprint is {CaseResult.case_result.upper()}', font_size="lg", font_weight="bold"),
+                                rx.text(f'This blueprint is {AIValidationState.case_result.upper()}', font_size="lg", font_weight="bold"),
                                 spacing="1"
                             ),
                             spacing="4",
