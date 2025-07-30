@@ -10,6 +10,8 @@ import base64
 from json import JSONDecodeError
 from .vectorization import Room
 from pprint import pprint
+import json
+
 
 DEBUG = True
 
@@ -58,17 +60,27 @@ def unscale_point(x: int, y: int, scale_factor: float):
 def unscale_room(juncts: list, scale_factor: float) -> list:
 	return list(map(lambda p: unscale_point(*p, scale_factor), juncts))
 
-def vectorize(img: Image) -> list[Room]:
-	img_b64 = _img2b64(img)
-	res = requests.post(f'{R2G_API}/vectorize', json={"input": img_b64})
-
+def vectorize(file_name: str, employee_id: int) -> list[Room]:
+	r2g_cached = bp_name2r2g(file_name, employee_id)
 	payload = None
 
-	try:
-		payload = res.json()
-	except JSONDecodeError as e:
-		print(e)
-		raise Exception("error calling vectorize. check if runpod container is running")
+
+	if not r2g_cached.exists():
+		print(f'no cached result for {employee_id=} {file_name=}')
+		print('calling r2g')
+		img = bp_name2image(file_name, employee_id)
+		img_b64 = _img2b64(img)
+		res = requests.post(f'{R2G_API}/vectorize', json={"input": img_b64})
+
+		try:
+			payload = res.json()
+		except JSONDecodeError as e:
+			print(e)
+			raise Exception("error calling vectorize. check if runpod container is running")
+	else:
+		print(f'found cached result for {employee_id=} {file_name=}')
+		with open(r2g_cached, 'r', encoding='utf-8') as f:
+			payload = json.load(f)
 
 	# TODO we need to experiment and handle what happens when r2g fails
 	# right now rooms is just null
@@ -76,6 +88,14 @@ def vectorize(img: Image) -> list[Room]:
 	# extract rooms from payload
 	rooms_raw = payload["rooms"]
 	scale_factor = payload["scale_factor"]
+
+	if rooms_raw and not r2g_cached.exists():
+		# if r2g worked fine and we have detected rooms
+		# we'll save this json to reuse later
+		with open(r2g_cached, 'w', encoding='utf-8') as f:
+		    json.dump(data, f, ensure_ascii=False, indent=4)
+
+		print(f'finished writing to cache {employee_id=} {file_name=}')
 
 	# discard semantic for now, keeping only junction points
 	room_polys_raw = list(map(lambda d: d['room_junctions'], rooms_raw))
@@ -120,13 +140,9 @@ def vectorize(img: Image) -> list[Room]:
 	return rooms
 
 
-
-
-
 if __name__ == '__main__':
 	print('starting')
-	img = bp_name2image('2d-floor-plan.jpg', '2')
-	vec = vectorize(img)
+	vec = vectorize(file_name, employee_id)
 	print("vec result")
 	pprint(vec)
 
