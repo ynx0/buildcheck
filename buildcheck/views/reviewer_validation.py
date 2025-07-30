@@ -33,6 +33,7 @@ class AIValidationState(rx.State):
     listOfCases: list[str] = []
     comments: dict = {}
     is_validating: bool = False
+    vis_output_trigger: int
 
 
     def write_violations(self, failures: list[Failure]):
@@ -185,8 +186,7 @@ class AIValidationState(rx.State):
     @rx.event
     async def on_validate(self):
         self.is_validating = True
-        yield None
-        await asyncio.sleep(1.5)
+        yield None  # give the frontend a chance to change the button loading state
 
         # run validation
         print(self.current_case_data)
@@ -204,10 +204,12 @@ class AIValidationState(rx.State):
 
         self.write_violations(failures)
 
-        # TODO call visualizer code here to generate image
-
         self.is_validating = False
         yield rx.toast.info("AI Validation ran successfully")
+        
+        # hack to trigger the visualize_path to show the image
+        self.vis_output_trigger += 1
+
 
 
 
@@ -264,6 +266,7 @@ class AIValidationState(rx.State):
 
         filt = list(filter(lambda case: self.case_id == case['id'], self.case_data))
         filt = filt[0] if filt else None
+        print(filt)
         return filt
 
 
@@ -275,7 +278,9 @@ class AIValidationState(rx.State):
 
     @rx.var
     def visualization_path(self) -> Optional[str]:
-
+        # create dep on the trigger so that we can recompute
+        # this var when we run ai validation
+        _ = self.vis_output_trigger
         # N.B! This approach exposes blueprints publicly via assets.
         if not self.current_case_data:
             return None
@@ -286,7 +291,7 @@ class AIValidationState(rx.State):
 
         if vis_output.exists():
             vis_output = Path(*vis_output.parts[1:])
-            print(f"{vis_output}")
+            print(f"{vis_output=}")
             return str(vis_output)
         else:
             return None
