@@ -3,7 +3,7 @@ from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.progress_tracker import progress_tracker, CaseState
 from buildcheck.backend.supabase_client import supabase_client
-from buildcheck.components.complianceCard import compliance_card, ValidationState
+from buildcheck.components.complianceCard import compliance_card, CaseResult, AIValidationState
 
 def statusOfCase() -> rx.Component:
     # This function returns a UI component that displays the current status of the user's blueprint submission.
@@ -26,7 +26,7 @@ def statusOfCase() -> rx.Component:
         )
     )
             
-@rx.page('/blueprint-pending')
+@rx.page('/blueprint-pending', on_load=AIValidationState.load_data)
 def employee_blueprint() -> rx.Component:
     return rx.vstack(
         navbar(),
@@ -52,7 +52,7 @@ def employee_blueprint() -> rx.Component:
                             rx.hstack(
                             rx.icon(tag="triangle_alert", color="orange", size=20),
                             rx.vstack(
-                                rx.text(f'This blueprint is {ValidationState.case_result.upper()}', font_size="lg", font_weight="bold"),
+                                rx.text(f'This blueprint is {CaseResult.case_result.upper()}', font_size="lg", font_weight="bold"),
                                 spacing="1"
                             ),
                             spacing="4",
@@ -60,14 +60,16 @@ def employee_blueprint() -> rx.Component:
                             ),
                             compliance_card(), 
                         ),
-                        rx.button("Resubmit", background_color="#197dca", size="3", marginTop="2em", on_click=rx.redirect("/upload"))
+                        rx.vstack(                
+                            rx.image(
+                            src="/blueprint.jpg",
+                            alt="Blueprint Image",
+                            width="50%",),
+                                        
+                            rx.button("Resubmit", background_color="#197dca", size="3", marginTop="2em", on_click=rx.redirect("/upload"))
+                        )
                     ),
                 ),
-                rx.image(
-                    src="/blueprint.jpg",
-                    alt="Blueprint Image",
-                    width="50%",
-                )
             ),
             padding="2em",
             width="100%",
