@@ -410,7 +410,7 @@ def validation_page() -> rx.Component:
             rx.hstack(
                 rx.box(
                     rx.cond(
-                        AIValidationState.visualization_path is not None,
+                        AIValidationState.visualization_path,
                         rx.image(src=rx.get_upload_url(AIValidationState.visualization_path), width="100%", height="auto", object_fit="contain"),
                         rx.box(),  # Empty box to preserve space
                     ),
