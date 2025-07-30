@@ -1,5 +1,4 @@
 import reflex as rx
-from buildcheck.components.stat_card import stat_card
 from buildcheck.components.navbar import navbar
 from buildcheck.components.footer import footer
 from buildcheck.components.status_tag import status_tag
@@ -14,6 +13,7 @@ from typing import Optional
 from buildcheck.backend.validation import Failure
 from buildcheck.backend.blueprints import bp_name2vispath
 from pathlib import Path
+from buildcheck.components.complianceCard import compliance_card
 
 class Status(Enum):
     PENDING = "pending"
@@ -300,73 +300,73 @@ def guideline_status(guideline: str) -> rx.Component:
     return rx.cond(AIValidationState.violations.contains(guideline), status_tag("rejected"), status_tag("approved")) 
 
 
-def compliance_card() -> rx.Component:
-    return rx.card(
-        rx.vstack(
-            rx.heading("Detailed Compliance Report", size="5"),
-            rx.hstack(
-                rx.input(
-                rx.input.slot(
-                    rx.icon(tag="search"),
-                ),
-                placeholder="Search compliance items...",
-                width="400px"
-                ),
-                rx.button(rx.icon(tag="list-filter"), "Status")
-            ),
-            rx.cond(
-                ~AIValidationState.violated_guidelines,
-                rx.text('No violations to display.', font_weight="bold", size="5"),
-                rx.table.root(
-                    rx.table.header(
-                        rx.table.row(
-                            rx.table.column_header_cell("ID"),
-                            rx.table.column_header_cell("Title"),
-                            rx.table.column_header_cell("Rule Description"),
-                            # rx.table.column_header_cell("Status"),
-                            rx.table.column_header_cell("Category"),
-                            rx.table.column_header_cell("Actions"),
-                        )
-                    ),
-                    rx.table.body(
-                        rx.foreach(
-                            AIValidationState.violated_guidelines,
-                            lambda item: rx.table.row(
-                                rx.table.cell(item["id"]),
-                                rx.table.cell(item["title"]),
-                                rx.table.cell(item["description"]),
-                                # rx.table.cell(guideline_status(item["id"])),
-                                rx.table.cell(item["category"]),
-                                # TODO this button should delete
-                                rx.table.cell(rx.button(
-                                    "Delete",
-                                    color_scheme="red",
-                                    on_click=AIValidationState.on_violation_delete(item['id'])
-                                ))
-                            )
-                        )
-                    ),
-                ),
-            ),
+# def compliance_card() -> rx.Component:
+#     return rx.card(
+#         rx.vstack(
+#             rx.heading("Detailed Compliance Report", size="5"),
+#             rx.hstack(
+#                 rx.input(
+#                 rx.input.slot(
+#                     rx.icon(tag="search"),
+#                 ),
+#                 placeholder="Search compliance items...",
+#                 width="400px"
+#                 ),
+#                 rx.button(rx.icon(tag="list-filter"), "Status")
+#             ),
+#             rx.cond(
+#                 ~AIValidationState.violated_guidelines,
+#                 rx.text('No violations to display.', font_weight="bold", size="5"),
+#                 rx.table.root(
+#                     rx.table.header(
+#                         rx.table.row(
+#                             rx.table.column_header_cell("ID"),
+#                             rx.table.column_header_cell("Title"),
+#                             rx.table.column_header_cell("Rule Description"),
+#                             # rx.table.column_header_cell("Status"),
+#                             rx.table.column_header_cell("Category"),
+#                             rx.table.column_header_cell("Actions"),
+#                         )
+#                     ),
+#                     rx.table.body(
+#                         rx.foreach(
+#                             AIValidationState.violated_guidelines,
+#                             lambda item: rx.table.row(
+#                                 rx.table.cell(item["id"]),
+#                                 rx.table.cell(item["title"]),
+#                                 rx.table.cell(item["description"]),
+#                                 # rx.table.cell(guideline_status(item["id"])),
+#                                 rx.table.cell(item["category"]),
+#                                 # TODO this button should delete
+#                                 rx.table.cell(rx.button(
+#                                     "Delete",
+#                                     color_scheme="red",
+#                                     on_click=AIValidationState.on_violation_delete(item['id'])
+#                                 ))
+#                             )
+#                         )
+#                     ),
+#                 ),
+#             ),
 
-            rx.heading("Add Comments", size="4"),
-            rx.form.root(
-            rx.hstack(
-                rx.input(
-                    name="input",
-                    placeholder="Enter text...",
-                    type="text",
-                    required=True,
-                    size="3",
-                    width="70%",
-                ),
-                rx.button("Add", type="submit"),
-                width="100%",
-            ),
-            reset_on_submit=True
-            ),
-        )
-    )
+#             rx.heading("Add Comments", size="4"),
+#             rx.form.root(
+#             rx.hstack(
+#                 rx.input(
+#                     name="input",
+#                     placeholder="Enter text...",
+#                     type="text",
+#                     required=True,
+#                     size="3",
+#                     width="70%",
+#                 ),
+#                 rx.button("Add", type="submit"),
+#                 width="100%",
+#             ),
+#             reset_on_submit=True
+#             ),
+#         )
+#     )
 
 
 @rx.page('/validation', on_load=AIValidationState.load_data)
@@ -401,28 +401,7 @@ def validation_page() -> rx.Component:
                 margin="15px"
             ),
             rx.heading("AI Compliance Overview", size="6"),
-            rx.hstack(
-                stat_card("Overall Compliance", AIValidationState.compliance_score, "circle-check-big", "green", "Compliance across all building guidelines."),
-                stat_card("Critical Violations", AIValidationState.violations.length(), "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
-                stat_card("Pending Reviews", AIValidationState.listOfCases.length(), "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
-            margin_bottom="2em",
-            ),
-            rx.hstack(
-                rx.box(
-                    rx.cond(
-                        AIValidationState.visualization_path is not None,
-                        rx.image(src=rx.get_upload_url(AIValidationState.visualization_path), width="100%", height="auto", object_fit="contain"),
-                        rx.box(),  # Empty box to preserve space
-                    ),
-                    width="50%",  # or adjust as needed
-                    height="100%",
-                    bg="gray.50",  # optional placeholder background
-                ),
-                compliance_card(),
-                width="100%",
-                spacing="3",  # no gap between panes
-                align="stretch", # match both sides in height
-            ),
+            compliance_card(),
             width="100%",
             spacing="6",
             padding_x=["1.5em", "1.5em", "3em"],

@@ -3,7 +3,8 @@ from buildcheck.components.status_tag import status_tag
 from buildcheck.state.user_state import UserState
 from buildcheck.backend.supabase_client import supabase_client
 import traceback
-
+from buildcheck.views.reviewer_validation import AIValidationState
+from buildcheck.components.stat_card import stat_card
 
 class ValidationState(rx.State):
     violations: list[str] = []
@@ -40,92 +41,107 @@ def guideline_status(guideline: str) -> rx.Component:
 
 
 def compliance_card() -> rx.Component:
-    return rx.container(
+    return rx.container (
             rx.script(src="https://unpkg.com/html2canvas-pro@1.5.11/dist/html2canvas-pro.js"),
             rx.script(src='/export-lib.js'),
             rx.box(
                 rx.vstack(
                     rx.hstack(
-                        rx.icon(tag="triangle_alert", color="orange", size=20),
-                        rx.vstack(
-                            rx.text(f'This blueprint is {ValidationState.case_result.upper()}', font_size="lg", font_weight="bold"),
-                            spacing="1"
-                        ),
-                        spacing="4",
-                        align_items="start"
+                        stat_card("Overall Compliance", AIValidationState.compliance_score, "circle-check-big", "green", "Compliance across all building guidelines."),
+                        stat_card("Critical Violations", AIValidationState.violations.length(), "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
+                        stat_card("Pending Reviews", AIValidationState.listOfCases.length(), "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
+                    margin_bottom="2em",
                     ),
                     rx.hstack(
                         rx.box(
-                            rx.text(f"{ValidationState.compliance_score * 100:.0f}%",
-                                    font_weight="bold",
-                                    style={"fontSize": "2rem"},
-                                    color="green"),
-                            rx.text("Compliance Score", font_size="sm", color="gray"),
-                            text_align="center"
+                            rx.cond(
+                                AIValidationState.visualization_path is not None,
+                                rx.image(src=rx.get_upload_url(AIValidationState.visualization_path), width="100%", height="auto", object_fit="contain"),
+                                rx.box(),  # Empty box to preserve space
+                            ),
+                            width="50%",  # or adjust as needed
+                            height="100%",
+                            bg="gray.50",  # optional placeholder background
                         ),
-                        rx.box(
-                            rx.text(ValidationState.guidelines.length() - ValidationState.violations.length(),
-                                    font_weight="bold",
-                                    style={"fontSize": "2rem"},
-                                    color="blue"),
-                            rx.text("Passed Checks", font_size="sm", color="gray"),
-                            text_align="center"
+                            spacing="4",
+                            background_color="#F0F4FF",
+                            padding="4px",
+                            margin_y="10px",
+                            width="100%",
+                            border_radius="8px"
                         ),
-                        rx.box(
-                            rx.text(f"{ValidationState.violations.length() }",
-                                    font_weight="bold",
-                                    style={"fontSize": "2rem"},
-                                    color="red"),
-                            rx.text("Violations", font_size="sm", color="gray"),
-                            text_align="center"
-                        ),
-                        spacing="4",
-                        justify="center",
                         width="100%",
-                        margin_top="3px",
+                        align_self="stretch",
+                        margin_bottom="4px",
+                        padding="4px",
+                )
+            ),
+            rx.card(
+                rx.vstack(
+                    rx.heading("Detailed Compliance Report", size="5"),
+                    rx.hstack(
+                        rx.input(
+                        rx.input.slot(
+                            rx.icon(tag="search"),
+                        ),
+                        placeholder="Search compliance items...",
+                        width="400px"
+                        ),
+                        rx.button(rx.icon(tag="list-filter"), "Status")
                     ),
-                    spacing="4",
-                    background_color="#F0F4FF",
-                    padding="4px",
-                    margin_y="10px",
-                    width="100%",
-                    border_radius="8px"
-                ),
-                width="100%",
-                align_self="stretch",
-                margin_bottom="4px",
-                padding="4px",
-            ),
+                    rx.cond(
+                        ~AIValidationState.violated_guidelines,
+                        rx.text('No violations to display.', font_weight="bold", size="5"),
+                        rx.table.root(
+                            rx.table.header(
+                                rx.table.row(
+                                    rx.table.column_header_cell("ID"),
+                                    rx.table.column_header_cell("Title"),
+                                    rx.table.column_header_cell("Rule Description"),
+                                    # rx.table.column_header_cell("Status"),
+                                    rx.table.column_header_cell("Category"),
+                                    rx.table.column_header_cell("Actions"),
+                                )
+                            ),
+                            rx.table.body(
+                                rx.foreach(
+                                    AIValidationState.violated_guidelines,
+                                    lambda item: rx.table.row(
+                                        rx.table.cell(item["id"]),
+                                        rx.table.cell(item["title"]),
+                                        rx.table.cell(item["description"]),
+                                        # rx.table.cell(guideline_status(item["id"])),
+                                        rx.table.cell(item["category"]),
+                                        # TODO this button should delete
+                                        rx.table.cell(rx.button(
+                                            "Delete",
+                                            color_scheme="red",
+                                            on_click=AIValidationState.on_violation_delete(item['id'])
+                                        ))
+                                    )
+                                )
+                            ),
+                        ),
+                    ),
 
-            # Updated Compliance Table with label, borders
-            rx.table.root(
-                rx.table.header(
-                    rx.table.row(
-                        rx.table.column_header_cell("Category"),
-                        rx.table.column_header_cell("Title"),
-                        rx.table.column_header_cell("Status"),
-                        rx.table.column_header_cell("Details"),
-                    )
-                ),
-                rx.table.body(
-                    rx.foreach(
-                        ValidationState.guidelines,
-                        lambda item: rx.table.row(
-                            rx.table.cell(item["category"]),
-                            rx.table.cell(item["title"]),
-                            rx.table.cell(guideline_status(item["code"])),
-                            rx.table.cell(item["description"]),
-                        )
-                    )
-                ),
-                striped=True,
-                highlight_on_hover=True,
-                with_border=True,
-                variant="surface",
-                size="3",
-                width="100%"
+                    rx.heading("Add Comments", size="4"),
+                    rx.form.root(
+                        rx.hstack(
+                            rx.input(
+                                name="input",
+                                placeholder="Enter text...",
+                                type="text",
+                                required=True,
+                                size="3",
+                                width="70%",
+                            ),
+                            rx.button("Add", type="submit"),
+                            width="100%",
+                        ),
+                        reset_on_submit=True
+                    ),
+                )
             ),
-
             rx.button(
                 "Download Report",
                 color_scheme="blue",
