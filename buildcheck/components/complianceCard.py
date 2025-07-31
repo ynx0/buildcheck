@@ -37,6 +37,7 @@ class AIValidationState(rx.State):
     comments: list[dict] = []  # Store comments from database
     is_validating: bool = False
     case_result: str = ""  # Default case result status
+    vis_output_trigger: int
 
 
     def write_violations(self, failures: list[Failure]):
@@ -222,6 +223,8 @@ class AIValidationState(rx.State):
 
         self.is_validating = False
         yield rx.toast.info("AI Validation ran successfully")
+        # hack to trigger the visualize_path to show the image
+        self.vis_output_trigger += 1
 
 
 
@@ -278,6 +281,7 @@ class AIValidationState(rx.State):
 
         filt = list(filter(lambda case: self.case_id == case['id'], self.case_data))
         filt = filt[0] if filt else None
+        print(filt)
         return filt
 
 
@@ -289,7 +293,9 @@ class AIValidationState(rx.State):
 
     @rx.var
     def visualization_path(self) -> Optional[str]:
-
+        # create dep on the trigger so that we can recompute
+        # this var when we run ai validation
+        _ = self.vis_output_trigger
         # N.B! This approach exposes blueprints publicly via assets.
         if not self.current_case_data:
             return None
@@ -300,7 +306,7 @@ class AIValidationState(rx.State):
 
         if vis_output.exists():
             vis_output = Path(*vis_output.parts[1:])
-            print(f"{vis_output}")
+            print(f"{vis_output=}")
             return str(vis_output)
         else:
             return None
