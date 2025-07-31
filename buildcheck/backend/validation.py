@@ -19,8 +19,9 @@ def run_validation(file_name: str, employee_id: int) -> list[Failure]:
     - run rules
     """
     image = bp_name2image(file_name, employee_id)
+
     # call r2g on image
-    rooms = vectorize(image)
+    rooms = vectorize(file_name, employee_id)
     layout = Layout(rooms=rooms, file_name=file_name)
 
     # run yolo on layout
