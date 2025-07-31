@@ -424,7 +424,7 @@ def compliance_card() -> rx.Component:
                 # Visualization image
                 rx.box(
                     rx.cond(
-                        AIValidationState.visualization_path is not None,
+                        AIValidationState.visualization_path,
                         rx.image(
                             src=rx.get_upload_url(AIValidationState.visualization_path),
                             width="100%",
