@@ -356,19 +356,22 @@ def compliance_card() -> rx.Component:
     return rx.vstack(
         rx.script(src="https://unpkg.com/html2canvas-pro@1.5.11/dist/html2canvas-pro.js"),
         rx.script(src="/export-lib.js"),
-
-        # Top statistics cards
-        rx.box(
-            rx.vstack(
-                rx.hstack(
-                    stat_card("Overall Compliance", AIValidationState.compliance_score, "circle-check-big", "green", "Compliance across all building guidelines."),
-                    stat_card("Critical Violations", AIValidationState.violations.length(), "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
-                    stat_card("Pending Reviews", AIValidationState.listOfCases.length(), "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
-                    spacing="4",
-                ),
-                margin_bottom="2em"
-            )
+        rx.cond(AIValidationState.violated_guidelines,
+            # Top statistics cards
+            rx.box(
+                rx.vstack(
+                    rx.hstack(
+                        stat_card("Overall Compliance", AIValidationState.compliance_score, "circle-check-big", "green", "Compliance across all building guidelines."),
+                        stat_card("Critical Violations", AIValidationState.violations.length(), "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
+                        stat_card("Pending Reviews", AIValidationState.listOfCases.length(), "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
+                        spacing="4",
+                    ),
+                    margin_bottom="2em"
+                )
+            ),
+                rx.fragment()
         ),
+                
 
         # Image + Table side-by-side
         rx.hstack(
