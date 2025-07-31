@@ -17,7 +17,11 @@ class AdminDashState(rx.State):
     bp_approved: int = 12
     review_time_avg_days: float = 2.3
     successes: list[dict] = []
-
+    violations = [
+        {"violation_type": "Room Size", "desc": "Living room too large", "guideline": "Section 2.3, Page 14", "freq": "high"},
+        {"violation_type": "Electrical Layout", "desc": "Insufficient outlets", "guideline": "Section 2.4, Page 3", "freq": "medium"},
+        {"violation_type": "Window placement", "desc": "Not enough windows", "guideline": "Section 3.4, Page 4", "freq": "low"},
+    ]
 
     @rx.event
     def no_op(self):
@@ -199,11 +203,6 @@ def main_content1() -> rx.Component:
 
 def common_violations() -> rx.Component:
 
-    violations = [
-        {"violation_type": "Room Size", "desc": "Living room too large", "guideline": "Section 2.3, Page 14", "freq": "high"},
-        {"violation_type": "Electrical Layout", "desc": "Insufficient outlets", "guideline": "Section 2.4, Page 3", "freq": "medium"},
-        {"violation_type": "Window placement", "desc": "Not enough windows", "guideline": "Section 3.4, Page 4", "freq": "low"},
-    ]
 
     return rx.card(
         rx.vstack(
@@ -218,15 +217,14 @@ def common_violations() -> rx.Component:
                     )
                 ),
                 rx.table.body(
-                    *[
-                        rx.table.row(
+                    rx.foreach(AdminDashState.violations,
+                        lambda violation: rx.table.row(
                             rx.table.cell(violation["violation_type"]),
                             rx.table.cell(violation["desc"]),
                             rx.table.cell(violation["guideline"]),
                             rx.table.cell(freq_tag(violation["freq"])),
                         )
-                        for violation in violations
-                    ]
+                    )
                 ),
                 width="100%",
                 # max_width="40em",
