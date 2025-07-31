@@ -100,7 +100,7 @@ def assignments_table() -> rx.Component:
         rx.vstack(
             rx.heading("Blueprint Assignments", size="5", margin_top="1em"),
             rx.spacer(),
-            rx.text(lambda: f"Current User: {UserState.name} ({UserState.role})", font_size="sm", color="gray"),
+            rx.text(f"Current User: {UserState.name} ({UserState.role})", font_size="sm", color="gray"),
             rx.hstack(
                 rx.input(
                     placeholder="Search by ID or Employee...",
