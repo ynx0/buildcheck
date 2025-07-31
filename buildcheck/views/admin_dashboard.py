@@ -12,7 +12,7 @@ HTML2CANVAS_PRO_SRC="https://unpkg.com/html2canvas-pro@1.5.11/dist/html2canvas-p
 months = list(map(lambda x: x[:3], calendar.month_name[1:]))
 
 class AdminDashState(rx.State):
-    total_reviewers: int = 1
+    total_reviewers: int = 4
     bp_review: int = 15
     bp_approved: int = 12
     review_time_avg_days: float = 2.3
