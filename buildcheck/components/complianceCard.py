@@ -424,14 +424,9 @@ def compliance_card() -> rx.Component:
                 # Visualization image
                 rx.box(
                     rx.cond(
-                        AIValidationState.visualization_path is not None,
-                        rx.image(
-                            src=rx.get_upload_url(AIValidationState.visualization_path),
-                            width="100%",
-                            height="auto",
-                            object_fit="contain"
-                        ),
-                        rx.box(height="100%")  # Keeps height even if image is missing
+                        AIValidationState.visualization_path,
+                        rx.image(src=rx.get_upload_url(AIValidationState.visualization_path), width="100%", height="auto", object_fit="contain"),
+                        rx.box(),  # Empty box to preserve space
                     ),
                     width="50%",
                     bg="gray.50",
