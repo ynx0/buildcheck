@@ -165,5 +165,5 @@ app.add_page(index, route="/", title="Login", description="Login or create an ac
 app.add_page(em.upload_page, title="Employee Dashboard", description="This page is where the employee can view their case.")
 app.add_page(rv_assignment, title="Blueprint Assignment")
 app.add_page(employee_view, route="/employee-view", title="Employee View")
-app.add_page(views.admin_assignments, route="/admin-assignments", title="Admin Assignments")
-app.add_page(am_dashboard, route="/admin-dashboard", title="Admin Dashboard") 
+# app.add_page(views.admin_assignments, route="/admin-assignments", title="Admin Assignments")
+# app.add_page(am_dashboard, route="/admin-dashboard", title="Admin Dashboard") 
