@@ -12,12 +12,11 @@ HTML2CANVAS_PRO_SRC="https://unpkg.com/html2canvas-pro@1.5.11/dist/html2canvas-p
 months = list(map(lambda x: x[:3], calendar.month_name[1:]))
 
 class AdminDashState(rx.State):
-    total_reviewers: int = 1
+    total_reviewers: int = 4
     bp_review: int = 15
     bp_approved: int = 12
     review_time_avg_days: float = 2.3
     successes: list[dict] = []
-
     violations = [
         {"violation_type": "Room Size", "desc": "Living room too large", "guideline": "Section 2.3, Page 14", "freq": "high"},
         {"violation_type": "Electrical Layout", "desc": "Insufficient outlets", "guideline": "Section 2.4, Page 3", "freq": "medium"},
@@ -218,8 +217,7 @@ def common_violations() -> rx.Component:
                     )
                 ),
                 rx.table.body(
-                    rx.foreach(
-                        AdminDashState.violations,
+                    rx.foreach(AdminDashState.violations,
                         lambda violation: rx.table.row(
                             rx.table.cell(violation["violation_type"]),
                             rx.table.cell(violation["desc"]),
@@ -250,7 +248,7 @@ def main_content2() -> rx.Component:
     )
 
 
-@rx.page(on_load=AdminDashState.randomize_successes)
+@rx.page(route='/admin-dashboard', on_load=AdminDashState.randomize_successes)
 def am_dashboard() -> rx.Component:
     return rx.vstack(
         rx.script(src=HTML2CANVAS_PRO_SRC),
