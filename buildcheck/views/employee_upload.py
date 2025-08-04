@@ -6,7 +6,7 @@ from buildcheck.state.user_state import UserState
 from buildcheck.backend.supabase_client import supabase_client
 from typing import List
 from buildcheck.backend.blueprints import bp_name2path
-
+from buildcheck.backend.email_utils import insert_notification
 
 
 
@@ -73,6 +73,8 @@ class EmployeeUploadState(rx.State):
             # overwrite old update
             self.uploads = [response.data[0]]
             # print("response was", response.data)
+
+        insert_notification(uid, f"Blueprint has been uploaded", f"Your blueprint, {file.name}, has been successfully uploaded.")
 
         yield rx.clear_selected_files("upload")
         yield rx.toast.success('done')
