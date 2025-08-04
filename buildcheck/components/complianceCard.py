@@ -266,6 +266,7 @@ class AIValidationState(rx.State):
         return f"{score * 100:.0f}%"
 
 
+
     @rx.var
     def violated_guidelines(self) -> list[dict]:
         # filter guidelines to be only those whose id is in the violated ids
@@ -273,6 +274,17 @@ class AIValidationState(rx.State):
         print(f'{violated=}')
         return violated
     
+
+    @rx.var
+    def violations_count(self) -> int:
+        return len(self.violated_guidelines)
+
+    @rx.var
+    def listOfCases_count(self) -> int:
+        return len(self.listOfCases)
+
+
+
 
     @rx.var
     def current_case_data(self) -> Optional[dict]:
@@ -289,6 +301,12 @@ class AIValidationState(rx.State):
     def case_id_str(self) -> str:
         return str(self.case_id)
 
+    @rx.var
+    def case_display_text(self) -> str:
+        if self.current_case_data:
+            return f"File Name: {self.current_case_data['blueprint_path']}"
+        else:
+            return ""
 
 
     @rx.var
@@ -310,6 +328,8 @@ class AIValidationState(rx.State):
             return str(vis_output)
         else:
             return None
+
+
 def table() -> rx.Component:
     return rx.table.root(
         rx.table.header(
@@ -362,8 +382,8 @@ def compliance_card() -> rx.Component:
                 rx.vstack(
                     rx.hstack(
                         stat_card("Overall Compliance", AIValidationState.compliance_score, "circle-check-big", "green", "Compliance across all building guidelines."),
-                        stat_card("Critical Violations", AIValidationState.violations.length(), "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
-                        stat_card("Pending Reviews", AIValidationState.listOfCases.length(), "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
+                        stat_card("Critical Violations", AIValidationState.violations_count, "circle-x", "#d62828", "High-priority issues requiring immediate attention."),
+                        stat_card("Pending Reviews", AIValidationState.listOfCases_count, "hourglass", "#220bb4", "BlueprintsSections awaiting manual verification or dispute resolution."),
                         spacing="4",
                     ),
                     margin_bottom="2em"
@@ -391,11 +411,9 @@ def compliance_card() -> rx.Component:
                         ),
                         rx.cond(
                             ~AIValidationState.violated_guidelines,
-                            rx.text("No violations to display.", font_weight="bold", size="5"),
+                            rx.text("No violations to display.", size="3", color="gray"),
                             table()
                         ),
-                        # Replace the comments section inside your table card with this:
-
                         rx.match(
                             UserState.role,
                             ("reviewer", rx.vstack(
@@ -415,7 +433,7 @@ def compliance_card() -> rx.Component:
                                     reset_on_submit=True
                                 )
                             )),
-                            rx.fragment()  # Empty for non-reviewers
+                            rx.fragment()
                         )
                     ),
                 
