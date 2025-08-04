@@ -301,6 +301,12 @@ class AIValidationState(rx.State):
     def case_id_str(self) -> str:
         return str(self.case_id)
 
+    @rx.var
+    def case_display_text(self) -> str:
+        if self.current_case_data:
+            return f"File Name: {self.current_case_data['blueprint_path']}"
+        else:
+            return ""
 
 
     @rx.var

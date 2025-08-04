@@ -22,6 +22,11 @@ def validation_page() -> rx.Component:
                     on_change=AIValidationState.change_case,
                     width="200px"
                 ),
+                rx.cond(AIValidationState.current_case_data,
+                    rx.text(AIValidationState.case_display_text)
+                ),
+                rx.spacer(),
+                rx.spacer(),
                 rx.button(
                     "Approve",
                     color_scheme="blue",
