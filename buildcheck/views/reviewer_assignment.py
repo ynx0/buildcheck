@@ -26,7 +26,7 @@ def blueprint_table() -> rx.Component:
             rx.table.cell(assigned["submitter"], justify="center"),
             rx.table.cell(assigned["date"], justify="center"),
             rx.table.cell(status_tag(assigned["status"]), justify="center"),
-            rx.table.cell(rx.link("view", href="#"), justify="center"),
+            rx.table.cell(rx.link("view", href="/validation"), justify="center"),
         )
 
     return rx.table.root(
