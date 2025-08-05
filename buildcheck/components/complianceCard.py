@@ -57,23 +57,18 @@ class AIValidationState(rx.State):
             .execute()
         )
 
-        (supabase_client.table("violations")
-            .select("*")
-            .eq("case_id", self.case_id)
-            .execute()
-        )
-
 
         # insert all the violations for current case
-        (supabase_client.table("violations")
-            .insert([
-                {
-                    "case_id": self.case_id,
-                    "guideline_code": code
-                } for code in failure_codes
-            ])
-            .execute()
-        )
+        if failure_codes:
+            (supabase_client.table("violations")
+                .insert([
+                    {
+                        "case_id": self.case_id,
+                        "guideline_code": code
+                    } for code in failure_codes
+                ])
+                .execute()
+            )
 
         # update the cases ai_descision
         ai_decision = AIDecision.REJECTED.value if failures else AIDecision.APPROVED.value
