@@ -11,6 +11,9 @@ from shapely import Point
 class Guidelines(Enum):
 	LAYOUT_HAS_ROOM = 1
 	ROOMS_HAVE_DOOR = 2
+	ROOMS_HAVE_DIM = 3
+	ROOM_DIMS_APPROPRIATE = 4
+	ROOM_AREA_APPROPRIATE = 5
 
 
 
@@ -87,10 +90,70 @@ def rule_every_room_door(layout: Layout) -> Verdict:
 	return failures
 
 
+def rule_every_room_has_dimension(layout: Layout) -> Verdict:
+
+	failures = []
+
+	def has_dim(room):
+		return any(isinstance(meta, Dimension) for meta in room.metadata)
+
+	for room in layout.rooms:
+		if not has_dim(room):
+			failures.append(Failure(Guidelines.ROOMS_HAVE_DIM, location=room.polygon.centroid))
+
+	return failures
+
+
+def rule_room_area_appropriate(layout: Layout) -> Verdict:
+
+	failures = []
+
+	MAX_AREA = 110  # we assume m so m^2
+
+	def area_appropriate(dim: Dimension):
+		return 0 < dim.width * dim.height < MAX_AREA
+
+	for room in layout.rooms:
+		# we don't worry about checking if they have dims here
+		# cuz we have an extra rule
+		if room.dims:
+			dim = room.dims[0]
+			if not area_appropriate(dim):
+				failures.append(Failure(Guidelines.ROOM_AREA_APPROPRIATE, location=room.polygon.centroid))
+
+	return failures
+
+
+
+
+def rule_room_dims_appropriate(layout: Layout) -> Verdict:
+
+	failures = []
+
+	MIN_WIDTH, MAX_WIDTH = 2, 200
+	MIN_HEIGHT, MAX_HEIGHT = 2, 200
+
+	def dims_appropriate(dim: Dimension):
+		return MIN_WIDTH < dim.width < MAX_WIDTH and MIN_HEIGHT < dim.height < MAX_HEIGHT
+
+	for room in layout.rooms:
+		# we don't worry about checking if they have dims here
+		# cuz we have an extra rule
+		if room.dims:
+			dim = room.dims[0]
+			if not dims_appropriate(dim):
+				failures.append(Failure(Guidelines.ROOM_DIMS_APPROPRIATE, location=room.polygon.centroid))
+
+	return failures
+
+
 
 ajyal_guidelines: list[Rule] = [
 	rule_at_least_one_room,
 	rule_every_room_door,
+	rule_every_room_has_dimension,
+	rule_room_dims_appropriate,
+	rule_room_area_appropriate,
 ]
 
 
