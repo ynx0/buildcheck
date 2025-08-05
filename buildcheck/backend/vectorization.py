@@ -77,7 +77,7 @@ class Room:
 
     @property
     def dims(self) -> list[Dimension]:
-        return filter(lambda m: isinstance(m, Dimension) self.metadata)
+        return list(filter(lambda m: isinstance(m, Dimension), self.metadata))
 
 
     def __repr__(self):

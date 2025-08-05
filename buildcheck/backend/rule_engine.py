@@ -141,7 +141,7 @@ def rule_room_dims_appropriate(layout: Layout) -> Verdict:
 		# cuz we have an extra rule
 		if room.dims:
 			dim = room.dims[0]
-			if not area_appropriate(dim):
+			if not dims_appropriate(dim):
 				failures.append(Failure(Guidelines.ROOM_DIMS_APPROPRIATE, location=room.polygon.centroid))
 
 	return failures
