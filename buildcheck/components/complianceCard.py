@@ -78,9 +78,9 @@ class AIValidationState(rx.State):
             .eq("id", self.case_id)
             .execute()
         )
-        
-        async with self:
-            self.violations = failure_codes
+
+
+        self.violations = failure_codes
 
 
     def handle_verdict(self, title, message, approved):
@@ -188,26 +188,14 @@ class AIValidationState(rx.State):
             print("Exception in load current case:", e)
             traceback.print_exc()
     
-    @rx.event
-    async def update_progress(self, value: int):
-        await asyncio.sleep(0.1)  # Small delay for smoother progress animation
-        async with self:
-            self.value = value
-        yield None
 
-    @rx.event(background=True)
+    @rx.event
     async def on_validate(self):
         # Initialize validation state
-        async with self:
-            self.is_validating = True
-            self.value = 0
+        self.is_validating = True
+        self.value = 0
         yield None
 
-        
-        # Update progress to 20%
-        async for _ in self.update_progress(20):
-            yield None
-        
         # run validation
         print(self.current_case_data)
 
@@ -217,23 +205,18 @@ class AIValidationState(rx.State):
                 self.current_case_data['submitter_id']
             )
         except FileNotFoundError as e:
-            async with self:
-                self.is_validating = False
-                self.value = 0
+            self.is_validating = False
+            self.value = 0
             yield rx.toast.error('Blueprint file not available')
             return
         
-        # Update progress to 50%
-        async for _ in self.update_progress(50):
-            yield None
+        await self.write_violations(failures)
 
-        self.write_violations(failures)
 
         # Update progress to 100% and finish
-        async with self:
-            self.is_validating = False
-            self.value = 100
-            self.vis_output_trigger += 1  # hack to trigger the visualize_path to show the image
+        self.is_validating = False
+        self.value = 100
+        self.vis_output_trigger += 1  # hack to trigger the visualize_path to show the image
         
         yield rx.toast.info("AI Validation ran successfully")
 

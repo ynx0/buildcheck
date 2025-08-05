@@ -46,7 +46,6 @@ def validation_page() -> rx.Component:
                 ),
                 margin="15px"
             ),
-            rx.progress(value=AIValidationState.value, width="50%", color_scheme="orange"),
             rx.heading("AI Compliance Overview", size="6"),
             compliance_card(),
             width="100%",
