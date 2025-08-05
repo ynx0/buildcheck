@@ -40,7 +40,7 @@ class AIValidationState(rx.State):
     vis_output_trigger: int
 
 
-    def write_violations(self, failures: list[Failure]):
+    async def write_violations(self, failures: list[Failure]):
         print(f'{failures=}')
         failure_codes = list(map(lambda f: f.guideline.value, failures))
 
@@ -57,23 +57,18 @@ class AIValidationState(rx.State):
             .execute()
         )
 
-        (supabase_client.table("violations")
-            .select("*")
-            .eq("case_id", self.case_id)
-            .execute()
-        )
-
 
         # insert all the violations for current case
-        (supabase_client.table("violations")
-            .insert([
-                {
-                    "case_id": self.case_id,
-                    "guideline_code": code
-                } for code in failure_codes
-            ])
-            .execute()
-        )
+        if failure_codes:
+            (supabase_client.table("violations")
+                .insert([
+                    {
+                        "case_id": self.case_id,
+                        "guideline_code": code
+                    } for code in failure_codes
+                ])
+                .execute()
+            )
 
         # update the cases ai_descision
         ai_decision = AIDecision.REJECTED.value if failures else AIDecision.APPROVED.value
@@ -82,6 +77,7 @@ class AIValidationState(rx.State):
             .eq("id", self.case_id)
             .execute()
         )
+
 
         self.violations = failure_codes
 
@@ -187,21 +183,16 @@ class AIValidationState(rx.State):
             )
 
             self.update_current_case(current_case.data)
-
-
-
-
-
         except Exception as e:
             print("Exception in load current case:", e)
             traceback.print_exc()
-
+    
 
     @rx.event
     async def on_validate(self):
+        # Initialize validation state
         self.is_validating = True
         yield None
-        await asyncio.sleep(1.5)
 
         # run validation
         print(self.current_case_data)
@@ -215,18 +206,15 @@ class AIValidationState(rx.State):
             self.is_validating = False
             yield rx.toast.error('Blueprint file not available')
             return
+        
+        await self.write_violations(failures)
 
 
-        self.write_violations(failures)
-
-        # TODO call visualizer code here to generate image
-
+        # Update progress to 100% and finish
         self.is_validating = False
+        self.vis_output_trigger += 1  # hack to trigger the visualize_path to show the image
+        
         yield rx.toast.info("AI Validation ran successfully")
-        # hack to trigger the visualize_path to show the image
-        self.vis_output_trigger += 1
-
-
 
     @rx.event
     def on_violation_delete(self, guideline_id: int):
@@ -328,8 +316,13 @@ class AIValidationState(rx.State):
             return str(vis_output)
         else:
             return None
-
-
+        
+def get_status(id) -> str:
+    return rx.cond(
+        AIValidationState.violations.contains(id),
+        "rejected",
+        "approved"
+    )
 def table() -> rx.Component:
     return rx.table.root(
         rx.table.header(
@@ -337,6 +330,7 @@ def table() -> rx.Component:
                 rx.table.column_header_cell("ID"),
                 rx.table.column_header_cell("Title"),
                 rx.table.column_header_cell("Rule Description"),
+                rx.table.column_header_cell("Status"),
                 rx.table.column_header_cell("Category"),
                 rx.match(
                     UserState.role,
@@ -347,11 +341,12 @@ def table() -> rx.Component:
         ),
         rx.table.body(
             rx.foreach(
-                AIValidationState.violated_guidelines,
+                AIValidationState.guidelines,
                 lambda item: rx.table.row(
                     rx.table.cell(item["id"]),
                     rx.table.cell(item["title"]),
                     rx.table.cell(item["description"]),
+                    rx.table.cell(status_tag(get_status(item["id"]))),
                     rx.table.cell(item["category"]),
                     rx.match(
                         UserState.role,
