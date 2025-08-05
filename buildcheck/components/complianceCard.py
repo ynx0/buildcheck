@@ -38,7 +38,6 @@ class AIValidationState(rx.State):
     is_validating: bool = False
     case_result: str = ""  # Default case result status
     vis_output_trigger: int
-    value: int = 0
 
 
     async def write_violations(self, failures: list[Failure]):
@@ -193,7 +192,6 @@ class AIValidationState(rx.State):
     async def on_validate(self):
         # Initialize validation state
         self.is_validating = True
-        self.value = 0
         yield None
 
         # run validation
@@ -206,7 +204,6 @@ class AIValidationState(rx.State):
             )
         except FileNotFoundError as e:
             self.is_validating = False
-            self.value = 0
             yield rx.toast.error('Blueprint file not available')
             return
         
@@ -215,7 +212,6 @@ class AIValidationState(rx.State):
 
         # Update progress to 100% and finish
         self.is_validating = False
-        self.value = 100
         self.vis_output_trigger += 1  # hack to trigger the visualize_path to show the image
         
         yield rx.toast.info("AI Validation ran successfully")
