@@ -134,7 +134,7 @@ def rule_room_dims_appropriate(layout: Layout) -> Verdict:
 	MIN_HEIGHT, MAX_HEIGHT = 2, 200
 
 	def dims_appropriate(dim: Dimension):
-		return MIN_WIDTH < dim.width < MAX_WIDTH && MIN_HEIGHT < dim.height < MAX_HEIGHT
+		return MIN_WIDTH < dim.width < MAX_WIDTH and MIN_HEIGHT < dim.height < MAX_HEIGHT
 
 	for room in layout.rooms:
 		# we don't worry about checking if they have dims here
@@ -142,7 +142,7 @@ def rule_room_dims_appropriate(layout: Layout) -> Verdict:
 		if room.dims:
 			dim = room.dims[0]
 			if not area_appropriate(dim):
-				failures.append(Failure(Guidelines.ROOM_AREA_APPROPRIATE, location=room.polygon.centroid))
+				failures.append(Failure(Guidelines.ROOM_DIMS_APPROPRIATE, location=room.polygon.centroid))
 
 	return failures
 
