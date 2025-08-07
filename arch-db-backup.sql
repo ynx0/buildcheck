@@ -12,23 +12,23 @@ CREATE TABLE public.cases (
   submitted_at timestamp with time zone NOT NULL DEFAULT now(),
   blueprint_path text NOT NULL,
   CONSTRAINT cases_pkey PRIMARY KEY (id),
-  CONSTRAINT cases_reviewer_id_fkey FOREIGN KEY (reviewer_id) REFERENCES public.users(id),
-  CONSTRAINT cases_submitter_id_fkey FOREIGN KEY (submitter_id) REFERENCES public.users(id)
+  CONSTRAINT cases_submitter_id_fkey FOREIGN KEY (submitter_id) REFERENCES public.users(id),
+  CONSTRAINT cases_reviewer_id_fkey FOREIGN KEY (reviewer_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.guidelines (
-  code text NOT NULL,
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   title text NOT NULL,
   description text,
   category text,
-  CONSTRAINT guidelines_pkey PRIMARY KEY (code)
+  CONSTRAINT guidelines_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.notifications (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   user_id bigint,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   message text,
-  read boolean,
-  title USER-DEFINED,
+  read boolean NOT NULL DEFAULT false,
+  title text NOT NULL,
   CONSTRAINT notifications_pkey PRIMARY KEY (id),
   CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -45,8 +45,8 @@ CREATE TABLE public.users (
 CREATE TABLE public.violations (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   case_id bigint NOT NULL,
-  guideline_code text NOT NULL UNIQUE,
+  guideline_code bigint NOT NULL,
   CONSTRAINT violations_pkey PRIMARY KEY (id),
-  CONSTRAINT violations_guideline_code_fkey FOREIGN KEY (guideline_code) REFERENCES public.guidelines(code),
+  CONSTRAINT violations_guideline_code_fkey FOREIGN KEY (guideline_code) REFERENCES public.guidelines(id),
   CONSTRAINT violations_case_id_fkey FOREIGN KEY (case_id) REFERENCES public.cases(id)
 );
