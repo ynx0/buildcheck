@@ -48,7 +48,7 @@ Do this instead of `pip install <package>`
 
 ## Authors
 
-- Joud
+- Joud Alsayid
 - Mohammed Alyami
-- Noura
-- Yaseen
+- Noura Alnaimi
+- Yaseen Shaikh
